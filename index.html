@@ -1,241 +1,341 @@
-import 'dart:async';
-import 'package:flutter/material.dart';
-// Google Fonts eklemeyi unutma pubspec.yaml'a: google_fonts: ^6.1.0
-// Şimdilik default font ile gidiyoruz ama sonra değiştiririz.
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kahvelab</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --primary-dark: #2C0309; /* Koyu Bordo */
+            --primary-light: #A61C26; /* Açık Kırmızı */
+            --gold: #D4AF37; /* Altın Sarısı */
+            --text-color: #ffffff;
+        }
 
-void main() {
-  runApp(const KahveLabApp());
-}
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Poppins', sans-serif;
+            -webkit-tap-highlight-color: transparent; /* Mobilde tıklama efektini siler */
+        }
 
-class KahveLabApp extends StatelessWidget {
-  const KahveLabApp({super.key});
+        body {
+            background-color: #1a1a1a;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
 
-  @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'KahveLab',
-      debugShowCheckedModeBanner: false,
-      theme: ThemeData(
-        primarySwatch: Colors.red,
-        scaffoldBackgroundColor: const Color(0xFF2C0309), // Koyu bordo zemin
-        useMaterial3: true,
-      ),
-      home: const SplashScreen(),
-    );
-  }
-}
+        /* Mobil Görünüm Simülasyonu (Telefonda tam ekran olur) */
+        #app-container {
+            width: 100%;
+            max-width: 400px; /* Mobil genişlik sınırı */
+            height: 100vh;
+            max-height: 850px;
+            background: linear-gradient(180deg, var(--primary-light) 0%, var(--primary-dark) 100%);
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 0 20px rgba(0,0,0,0.5);
+        }
 
-// --- 1. SPLASH SCREEN (AÇILIŞ) ---
-class SplashScreen extends StatefulWidget {
-  const SplashScreen({super.key});
+        /* --- SPLASH EKRANI --- */
+        #splash-screen {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(180deg, #8B0000 0%, #1a0102 100%);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 999;
+            transition: opacity 0.5s ease;
+        }
 
-  @override
-  State<SplashScreen> createState() => _SplashScreenState();
-}
+        .logo-circle {
+            width: 120px;
+            height: 120px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            border: 2px solid var(--gold);
+            margin-bottom: 20px;
+            box-shadow: 0 0 30px rgba(212, 175, 55, 0.3);
+        }
 
-class _SplashScreenState extends State<SplashScreen> {
-  @override
-  void initState() {
-    super.initState();
-    // 3 Saniye sonra Ana Sayfaya atar
-    Timer(const Duration(seconds: 3), () {
-      Navigator.of(context).pushReplacement(
-        MaterialPageRoute(builder: (context) => const HomePage()),
-      );
-    });
-  }
+        .logo-text {
+            color: var(--text-color);
+            font-size: 32px;
+            font-weight: 700;
+            letter-spacing: 2px;
+        }
 
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      body: Container(
-        decoration: const BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-            colors: [
-              Color(0xFF8B0000), // Açık Bordo
-              Color(0xFF2C0309), // Koyu Bordo (Siyaha yakın)
-            ],
-          ),
-        ),
-        child: Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              // Logonu buraya asset olarak ekleyeceksin. Şimdilik Icon koydum.
-              // Image.asset('assets/logo.png', width: 150),
-              Container(
-                padding: const EdgeInsets.all(20),
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  color: Colors.white.withOpacity(0.1),
-                ),
-                child: const Icon(Icons.coffee, size: 80, color: Colors.white),
-              ),
-              const SizedBox(height: 20),
-              const Text(
-                "Kahvelab",
-                style: TextStyle(
-                  fontSize: 32,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.white,
-                  letterSpacing: 2,
-                ),
-              ),
-              const SizedBox(height: 10),
-              const Text(
-                "Yapay Zeka Destekli Fal",
-                style: TextStyle(color: Colors.white70, fontSize: 14),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-}
+        .tagline {
+            color: rgba(255,255,255,0.7);
+            font-size: 14px;
+            margin-top: 5px;
+        }
 
-// --- 2. HOME PAGE (ANA SAYFA) ---
-class HomePage extends StatelessWidget {
-  const HomePage({super.key});
+        /* --- ANA SAYFA --- */
+        #home-screen {
+            display: none; /* Başlangıçta gizli */
+            height: 100%;
+            flex-direction: column;
+            padding-bottom: 70px; /* Alt menü boşluğu */
+        }
 
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      // Arka plan gradyanı için body'i Container ile sarıyoruz
-      body: Container(
-        decoration: const BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-            colors: [
-              Color(0xFFA61C26), // Mockup üst kısım kırmızısı
-              Color(0xFF2C0309), // Alt kısım koyu
-            ],
-          ),
-        ),
-        child: SafeArea(
-          child: Column(
-            children: [
-              // Üst Header
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 20),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    const Text(
-                      "Ana Sayfa",
-                      style: TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.bold),
-                    ),
-                    IconButton(
-                      icon: const Icon(Icons.notifications_none, color: Colors.white),
-                      onPressed: () {},
-                    ),
-                  ],
-                ),
-              ),
-              
-              const SizedBox(height: 20),
+        /* Header */
+        .header {
+            padding: 40px 20px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
 
-              // ORTA BÜYÜK BUTON ALANI (Mockup'taki daire)
-              Expanded(
-                child: Column(
-                  children: [
-                    Container(
-                      height: 280,
-                      width: 280,
-                      decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        gradient: LinearGradient(
-                          colors: [const Color(0xFFD4AF37).withOpacity(0.2), Colors.transparent],
-                          begin: Alignment.topCenter,
-                          end: Alignment.bottomCenter,
-                        ),
-                        border: Border.all(color: const Color(0xFFD4AF37), width: 1), // Altın rengi çerçeve
-                      ),
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                           const Icon(Icons.coffee_rounded, size: 60, color: Color(0xFFD4AF37)),
-                           const SizedBox(height: 10),
-                           ElevatedButton(
-                             onPressed: () {
-                               // KAMERA SAYFASINA GİDECEK KOD BURAYA
-                             },
-                             style: ElevatedButton.styleFrom(
-                               backgroundColor: const Color(0xFF8B0000),
-                               padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 20),
-                               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(30)),
-                               side: const BorderSide(color: Color(0xFFD4AF37), width: 2)
-                             ),
-                             child: const Text("FAL GÖNDER", style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold)),
-                           )
-                        ],
-                      ),
-                    ),
-                    
-                    const SizedBox(height: 30),
-                    
-                    // Geçmiş Fallar Başlık
-                    Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 20.0),
-                      child: Align(
-                        alignment: Alignment.centerLeft,
-                        child: const Text("Geçmiş Fallarım", style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold)),
-                      ),
-                    ),
+        .header h1 {
+            color: var(--text-color);
+            font-size: 22px;
+        }
 
-                    // Geçmiş Fallar Listesi (Yatay Scroll)
-                    Container(
-                      height: 120,
-                      margin: const EdgeInsets.only(top: 10),
-                      child: ListView.builder(
-                        scrollDirection: Axis.horizontal,
-                        padding: const EdgeInsets.only(left: 20),
-                        itemCount: 3,
-                        itemBuilder: (context, index) {
-                          return Container(
-                            width: 100,
-                            margin: const EdgeInsets.only(right: 15),
-                            decoration: BoxDecoration(
-                              color: Colors.white.withOpacity(0.1),
-                              borderRadius: BorderRadius.circular(15),
-                              border: Border.all(color: Colors.white24)
-                            ),
-                            child: Column(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                const Icon(Icons.history_edu, color: Colors.white70, size: 30),
-                                const SizedBox(height: 5),
-                                Text("Fal #${index + 1}", style: const TextStyle(color: Colors.white)),
-                              ],
-                            ),
-                          );
-                        },
-                      ),
-                    )
-                  ],
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
-      
-      // ALT MENÜ
-      bottomNavigationBar: BottomNavigationBar(
-        backgroundColor: const Color(0xFF1A0104),
-        selectedItemColor: const Color(0xFFD4AF37), // Altın rengi
-        unselectedItemColor: Colors.white54,
-        type: BottomNavigationBarType.fixed,
-        items: const [
-          BottomNavigationBarItem(icon: Icon(Icons.home), label: ''),
-          BottomNavigationBarItem(icon: Icon(Icons.calendar_month), label: ''),
-          BottomNavigationBarItem(icon: Icon(Icons.notifications), label: ''),
-          BottomNavigationBarItem(icon: Icon(Icons.person), label: ''),
-        ],
-      ),
-    );
-  }
-}
+        .notif-btn {
+            background: rgba(255,255,255,0.2);
+            border: none;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            color: white;
+            cursor: pointer;
+        }
+
+        /* Orta Büyük Buton Alanı */
+        .main-action-area {
+            flex: 1;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+        }
+
+        .circle-bg {
+            position: absolute;
+            width: 280px;
+            height: 280px;
+            border-radius: 50%;
+            border: 1px solid rgba(212, 175, 55, 0.5);
+            background: radial-gradient(circle, rgba(212, 175, 55, 0.2) 0%, rgba(0,0,0,0) 70%);
+            animation: pulse 3s infinite;
+        }
+
+        .fal-btn {
+            width: 160px;
+            height: 160px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #720e17 0%, #4a050a 100%);
+            border: 2px solid var(--gold);
+            color: white;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            position: relative;
+            z-index: 2;
+            transition: transform 0.2s;
+        }
+
+        .fal-btn:active {
+            transform: scale(0.95);
+        }
+
+        .fal-btn i {
+            font-size: 40px;
+            margin-bottom: 10px;
+            color: var(--gold);
+        }
+
+        .fal-btn span {
+            font-weight: 700;
+            font-size: 16px;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); opacity: 0.5; }
+            50% { transform: scale(1.1); opacity: 0.8; }
+            100% { transform: scale(1); opacity: 0.5; }
+        }
+
+        /* Geçmiş Fallar Listesi */
+        .history-section {
+            padding: 0 20px 20px;
+        }
+
+        .section-title {
+            color: white;
+            font-size: 18px;
+            margin-bottom: 15px;
+            font-weight: 600;
+        }
+
+        .history-list {
+            display: flex;
+            overflow-x: auto;
+            gap: 15px;
+            padding-bottom: 10px;
+        }
+        
+        /* Scrollbar'ı gizle */
+        .history-list::-webkit-scrollbar {
+            display: none;
+        }
+
+        .history-card {
+            min-width: 100px;
+            height: 110px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 15px;
+            padding: 10px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .history-card i {
+            color: var(--gold);
+            font-size: 24px;
+            margin-bottom: 8px;
+        }
+
+        .history-card span {
+            color: white;
+            font-size: 12px;
+            text-align: center;
+        }
+
+        /* Alt Navigasyon */
+        .bottom-nav {
+            position: absolute;
+            bottom: 0;
+            width: 100%;
+            height: 70px;
+            background: #180204;
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            border-top: 1px solid rgba(255,255,255,0.05);
+        }
+
+        .nav-item {
+            color: rgba(255,255,255,0.5);
+            font-size: 24px;
+            cursor: pointer;
+            transition: color 0.3s;
+        }
+
+        .nav-item.active {
+            color: var(--gold);
+        }
+
+    </style>
+</head>
+<body>
+
+    <div id="app-container">
+        
+        <div id="splash-screen">
+            <div class="logo-circle">
+                <i class="fa-solid fa-mug-hot" style="font-size: 50px; color: #D4AF37;"></i>
+            </div>
+            <h1 class="logo-text">KAHVELAB</h1>
+            <p class="tagline">Geleceğin Sırları Burada</p>
+        </div>
+
+        <div id="home-screen">
+            <div class="header">
+                <h1>Ana Sayfa</h1>
+                <button class="notif-btn">
+                    <i class="fa-regular fa-bell"></i>
+                </button>
+            </div>
+
+            <div class="main-action-area">
+                <div class="circle-bg"></div>
+                <button class="fal-btn" onclick="startCamera()">
+                    <i class="fa-solid fa-camera"></i>
+                    <span>FAL GÖNDER</span>
+                </button>
+            </div>
+
+            <div class="history-section">
+                <h3 class="section-title">Geçmiş Fallarım</h3>
+                <div class="history-list">
+                    <div class="history-card">
+                        <i class="fa-solid fa-scroll"></i>
+                        <span>Fal #1<br><small style="opacity:0.6">Dün</small></span>
+                    </div>
+                    <div class="history-card">
+                        <i class="fa-solid fa-scroll"></i>
+                        <span>Fal #2<br><small style="opacity:0.6">3 Gün Önce</small></span>
+                    </div>
+                    <div class="history-card">
+                        <i class="fa-solid fa-scroll"></i>
+                        <span>Fal #3<br><small style="opacity:0.6">1 Hafta</small></span>
+                    </div>
+                    <div class="history-card">
+                        <i class="fa-solid fa-scroll"></i>
+                        <span>Fal #4<br><small style="opacity:0.6">1 Ay</small></span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bottom-nav">
+                <div class="nav-item active"><i class="fa-solid fa-house"></i></div>
+                <div class="nav-item"><i class="fa-solid fa-calendar-days"></i></div>
+                <div class="nav-item"><i class="fa-solid fa-bell"></i></div>
+                <div class="nav-item"><i class="fa-solid fa-user"></i></div>
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        // Sayfa yüklendiğinde çalışacak kodlar
+        document.addEventListener('DOMContentLoaded', () => {
+            
+            const splashScreen = document.getElementById('splash-screen');
+            const homeScreen = document.getElementById('home-screen');
+
+            // 3 Saniye sonra Splash'i kaldır, Home'u getir
+            setTimeout(() => {
+                splashScreen.style.opacity = '0';
+                
+                // Opaklık animasyonu bitince display:none yap
+                setTimeout(() => {
+                    splashScreen.style.display = 'none';
+                    homeScreen.style.display = 'flex';
+                }, 500);
+
+            }, 3000); // 3000 milisaniye = 3 saniye
+        });
+
+        // Fal Gönder Butonu Fonksiyonu
+        function startCamera() {
+            // Şimdilik sadece uyarı versin, sonra buraya kamera açma kodu gelecek
+            alert("Kamera arayüzüne geçiliyor...");
+            // Burada mockup'taki 2. sayfaya (kamera ekranı) geçiş yapacağız.
+        }
+    </script>
+
+</body>
+</html>

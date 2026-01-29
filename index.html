@@ -9,20 +9,37 @@
     
     <style>
         :root {
+            /* Renk Paleti (Aydınlık - Varsayılan) */
             --primary: #8B0000;
             --primary-light: #D92546;
             --gold: #FFD700;
-            --bg-body: #F2F2F7;
-            --text-main: #1C1C1E;
+            
+            --bg-body: #F2F2F7; /* iOS Gri Arkaplan */
+            --bg-card: #FFFFFF;
+            --bg-header: rgba(255, 255, 255, 0.85);
+            
+            --text-main: #000000;
             --text-sub: #8E8E93;
-            --ios-blur: rgba(255, 255, 255, 0.85);
-            --nav-height: 85px; /* iOS safe area için biraz arttırdım */
+            --border-color: #E5E5EA;
+            
+            --nav-height: 85px;
+            --ios-blur: 20px;
+        }
+
+        /* KARANLIK MOD (CSS Class ile tetiklenecek) */
+        body.dark-mode {
+            --bg-body: #000000;
+            --bg-card: #1C1C1E;
+            --bg-header: rgba(28, 28, 30, 0.85);
+            --text-main: #FFFFFF;
+            --text-sub: #98989D;
+            --border-color: #38383A;
         }
 
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; -webkit-tap-highlight-color: transparent; }
 
         body {
-            background-color: #000;
+            background-color: #000; /* Dış çerçeve her zaman siyah kalsın */
             display: flex;
             justify-content: center;
             height: 100vh;
@@ -32,13 +49,15 @@
 
         #app {
             width: 100%;
-            max-width: 414px; /* iPhone Max Genişliği */
+            max-width: 414px;
             height: 100%;
-            background-color: #FAFAFA;
+            background-color: var(--bg-body);
+            color: var(--text-main);
             position: relative;
             overflow: hidden;
             display: flex;
             flex-direction: column;
+            transition: background-color 0.3s ease;
         }
 
         /* --- ORTAK UI --- */
@@ -49,7 +68,7 @@
             width: 100%;
             overflow-y: auto;
             padding-bottom: var(--nav-height);
-            background: #FAFAFA;
+            background: var(--bg-body);
             animation: fadeIn 0.4s ease;
         }
         .screen.active { display: flex; }
@@ -59,52 +78,35 @@
         /* iOS Style Header */
         .header {
             padding: 15px 24px;
-            padding-top: 50px; /* Status bar boşluğu */
+            padding-top: 50px;
             display: flex;
             justify-content: space-between;
             align-items: center;
-            background: var(--ios-blur);
-            backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
+            background: var(--bg-header);
+            backdrop-filter: blur(var(--ios-blur));
+            -webkit-backdrop-filter: blur(var(--ios-blur));
             position: sticky;
             top: 0;
             z-index: 20;
-            border-bottom: 1px solid rgba(0,0,0,0.05);
+            border-bottom: 1px solid var(--border-color);
+            transition: background 0.3s;
         }
         .header-brand { font-size: 24px; font-weight: 800; color: var(--primary); letter-spacing: -0.5px; }
         .header-title { font-size: 17px; font-weight: 600; color: var(--text-main); position: absolute; left: 50%; transform: translateX(-50%); }
         .icon-btn { background: none; border: none; font-size: 20px; color: var(--primary); cursor: pointer; }
 
-        /* --- GİRİŞ EKRANI (Revize) --- */
-        .auth-container { padding: 24px; margin-top: 20px; }
-        .auth-input { width: 100%; padding: 16px; margin-bottom: 12px; border-radius: 12px; border: 1px solid #E5E5EA; background: #fff; font-size: 16px; }
-        .auth-input:focus { border-color: var(--primary); outline: none; }
-        
-        .divider { display: flex; align-items: center; margin: 30px 0; color: #999; font-size: 13px; font-weight: 500; }
-        .divider::before, .divider::after { content: ""; flex: 1; height: 1px; background: #E5E5EA; }
-        .divider span { margin: 0 15px; }
-
-        /* Social Buttons */
-        .social-btn {
-            width: 100%; padding: 16px; border-radius: 14px;
-            display: flex; align-items: center; justify-content: center; gap: 10px;
-            font-size: 16px; font-weight: 600; cursor: pointer; margin-bottom: 12px;
-            transition: transform 0.1s;
+        /* --- UI Components --- */
+        .submit-btn {
+            width: 100%; padding: 16px; border-radius: 14px; background: var(--primary); color: white;
+            border: none; font-weight: 700; font-size: 16px; cursor: pointer; margin-top: 10px;
+            box-shadow: 0 5px 15px rgba(139, 0, 0, 0.2);
         }
-        .social-btn:active { transform: scale(0.98); }
-        .btn-apple { background: #000; color: white; border: none; }
-        .btn-google { background: #fff; color: #1f1f1f; border: 1px solid #E5E5EA; }
 
-        /* --- ANA SAYFA (Revize) --- */
+        /* --- ANA SAYFA ELEMENTLERİ --- */
         .hero-section {
-            padding: 40px 0;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            background: linear-gradient(180deg, #FFFFFF 0%, #FAFAFA 100%);
+            padding: 40px 0; display: flex; flex-direction: column; align-items: center;
+            background: linear-gradient(180deg, var(--bg-card) 0%, var(--bg-body) 100%);
         }
-        
-        /* Fal Butonu & Kredi Rozeti */
         .main-fal-btn {
             width: 160px; height: 160px; border-radius: 50%;
             background: linear-gradient(135deg, var(--primary-light), var(--primary));
@@ -112,129 +114,128 @@
             box-shadow: 0 15px 40px rgba(139, 0, 0, 0.3); z-index: 2; cursor: pointer; position: relative;
         }
         .credit-badge-pill {
-            margin-top: 20px;
-            background: white; padding: 8px 16px; border-radius: 20px;
+            margin-top: 20px; background: var(--bg-card); padding: 8px 16px; border-radius: 20px;
             font-size: 13px; font-weight: 600; color: var(--primary);
-            box-shadow: 0 4px 15px rgba(0,0,0,0.08); border: 1px solid rgba(0,0,0,0.05);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.08); border: 1px solid var(--border-color);
             display: flex; align-items: center; gap: 6px;
         }
 
-        /* Günlük Özet (Kilit Mantığı) */
+        /* Özet Kartları */
         .summary-section { padding: 24px; position: relative; }
-        .summary-header { font-size: 20px; font-weight: 700; margin-bottom: 15px; color: var(--text-main); letter-spacing: -0.5px; }
-        
-        .summary-grid { display: flex; gap: 12px; overflow-x: auto; padding-bottom: 10px; transition: filter 0.3s; }
+        .summary-header { font-size: 20px; font-weight: 700; margin-bottom: 15px; color: var(--text-main); }
+        .summary-grid { display: flex; gap: 12px; overflow-x: auto; padding-bottom: 10px; }
         .summary-card {
-            min-width: 120px; height: 140px;
-            background: white; border-radius: 18px; padding: 16px;
+            min-width: 120px; height: 140px; background: var(--bg-card); border-radius: 18px; padding: 16px;
             display: flex; flex-direction: column; justify-content: space-between;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.03); border: 1px solid rgba(0,0,0,0.02);
+            box-shadow: 0 4px 20px rgba(0,0,0,0.03); border: 1px solid var(--border-color);
         }
-        
-        /* Kilitli Durum */
-        .summary-grid.locked { filter: blur(8px); pointer-events: none; user-select: none; }
+        .summary-grid.locked { filter: blur(8px); pointer-events: none; }
         .lock-overlay {
             position: absolute; top: 60px; left: 0; width: 100%; height: 140px;
-            display: flex; flex-direction: column; align-items: center; justify-content: center;
-            z-index: 10;
+            display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 10;
         }
         .lock-btn {
             background: rgba(0,0,0,0.8); color: white; padding: 12px 24px; border-radius: 25px;
             border: none; font-weight: 600; font-size: 13px; cursor: pointer;
-            backdrop-filter: blur(10px); box-shadow: 0 10px 30px rgba(0,0,0,0.2);
         }
 
-        /* --- HESABIM (Premium Revize) --- */
-        .profile-header { text-align: center; padding: 30px 24px; background: white; border-bottom: 1px solid #f0f0f0; }
+        /* --- HESABIM --- */
+        .profile-header { text-align: center; padding: 30px 24px; background: var(--bg-card); border-bottom: 1px solid var(--border-color); }
         .avatar-large { width: 90px; height: 90px; border-radius: 50%; object-fit: cover; border: 3px solid var(--primary); margin-bottom: 10px; }
 
-        /* Premium Card V2 (iPhone Style) */
         .premium-card-v2 {
-            margin: 20px 24px;
-            background: linear-gradient(135deg, #1C1C1E 0%, #000000 100%);
-            border-radius: 20px; padding: 24px;
-            position: relative; overflow: hidden;
-            border: 1px solid rgba(255, 215, 0, 0.2);
-            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
-        }
-        /* Altın Parlama Efekti */
-        .premium-card-v2::after {
-            content: ''; position: absolute; top: -50%; right: -50%; width: 200px; height: 200px;
-            background: radial-gradient(circle, rgba(255,215,0,0.2) 0%, transparent 70%);
-            filter: blur(30px);
+            margin: 20px 24px; background: linear-gradient(135deg, #1C1C1E 0%, #000000 100%);
+            border-radius: 20px; padding: 24px; position: relative; overflow: hidden;
+            border: 1px solid rgba(255, 215, 0, 0.2); box-shadow: 0 10px 30px rgba(0,0,0,0.2);
         }
         .premium-btn {
-            background: linear-gradient(90deg, #FFD700, #FDB931);
-            color: black; border: none; padding: 14px; width: 100%; border-radius: 12px;
-            font-weight: 700; margin-top: 20px; cursor: pointer;
+            background: linear-gradient(90deg, #FFD700, #FDB931); color: black; border: none; 
+            padding: 14px; width: 100%; border-radius: 12px; font-weight: 700; margin-top: 20px; cursor: pointer;
         }
 
-        /* Menü Listesi */
         .menu-list { padding: 0 24px; }
         .menu-item {
             display: flex; align-items: center; justify-content: space-between;
-            background: white; padding: 18px; border-radius: 14px; margin-bottom: 10px;
-            font-weight: 500; cursor: pointer; border: 1px solid #F2F2F7;
+            background: var(--bg-card); padding: 18px; border-radius: 14px; margin-bottom: 10px;
+            font-weight: 500; cursor: pointer; border: 1px solid var(--border-color); color: var(--text-main);
         }
-        .menu-item:active { background: #F2F2F7; }
 
-        /* --- AYARLAR MODALI (Senin Resimdeki Gibi) --- */
-        #settings-modal {
+        /* --- MODAL TASARIMLARI (Ayarlar & Bildirimler) --- */
+        .modal-sheet {
             position: fixed; bottom: -100%; left: 0; width: 100%; height: 100%;
-            background: #F2F2F7; z-index: 200; transition: bottom 0.4s cubic-bezier(0.2, 0.8, 0.2, 1);
+            background: var(--bg-body); z-index: 200; 
+            transition: bottom 0.4s cubic-bezier(0.2, 0.8, 0.2, 1);
             display: flex; flex-direction: column;
         }
-        #settings-modal.open { bottom: 0; }
+        .modal-sheet.open { bottom: 0; }
         
-        .settings-content { padding: 24px; overflow-y: auto; }
+        .modal-content { padding: 24px; overflow-y: auto; }
         
+        /* Kart Grupları (Görseldeki gibi) */
         .settings-group {
-            background: white; border-radius: 12px; padding: 20px; margin-bottom: 24px;
+            background: var(--bg-card); border-radius: 12px; padding: 20px; margin-bottom: 24px;
             box-shadow: 0 2px 10px rgba(0,0,0,0.02);
         }
-        .settings-label { font-size: 11px; text-transform: uppercase; color: #8E8E93; margin-bottom: 10px; letter-spacing: 0.5px; padding-left: 5px; }
+        .settings-label { 
+            font-size: 12px; text-transform: uppercase; color: var(--text-sub); 
+            margin-bottom: 8px; letter-spacing: 0.5px; padding-left: 10px; 
+        }
         
-        /* Segmented Control (Resimdeki Seçim Kutuları) */
+        /* Segmented Control (Tema Seçici) */
         .segmented-control {
-            display: flex; background: #EFEFF4; border-radius: 9px; padding: 2px;
+            display: flex; background: rgba(118, 118, 128, 0.12); border-radius: 9px; padding: 2px;
             height: 40px; width: 100%;
         }
         .segment-opt {
             flex: 1; display: flex; align-items: center; justify-content: center;
-            font-size: 13px; font-weight: 500; border-radius: 7px; cursor: pointer; color: #000;
+            font-size: 13px; font-weight: 500; border-radius: 7px; cursor: pointer; color: var(--text-main);
+            transition: all 0.2s;
         }
-        .segment-opt.selected { background: white; box-shadow: 0 2px 5px rgba(0,0,0,0.1); font-weight: 600; }
-        .segment-opt i { margin-right: 6px; font-size: 14px; }
+        .segment-opt.selected { 
+            background: var(--bg-card); 
+            box-shadow: 0 3px 8px rgba(0,0,0,0.12); 
+            font-weight: 600; 
+            color: var(--primary); /* Seçili olunca KahveLab rengi */
+        }
+        
+        /* Toggle Switch (Bildirimler için) */
+        .toggle-row { display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px solid var(--border-color); }
+        .toggle-row:last-child { border-bottom: none; }
+        .switch { position: relative; display: inline-block; width: 50px; height: 30px; }
+        .switch input { opacity: 0; width: 0; height: 0; }
+        .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #ccc; transition: .4s; border-radius: 34px; }
+        .slider:before { position: absolute; content: ""; height: 26px; width: 26px; left: 2px; bottom: 2px; background-color: white; transition: .4s; border-radius: 50%; }
+        input:checked + .slider { background-color: var(--primary); }
+        input:checked + .slider:before { transform: translateX(20px); }
 
         .delete-btn { width: 100%; padding: 15px; background: rgba(255, 59, 48, 0.1); color: #FF3B30; border: none; border-radius: 12px; font-weight: 600; cursor: pointer; }
 
-        /* --- BOTTOM NAV (iOS Glass Style) --- */
+        /* --- BOTTOM NAV --- */
         .bottom-nav {
             position: absolute; bottom: 0; width: 100%; height: var(--nav-height);
-            background: var(--ios-blur);
-            backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
+            background: var(--bg-header);
+            backdrop-filter: blur(var(--ios-blur)); -webkit-backdrop-filter: blur(var(--ios-blur));
             display: flex; justify-content: space-around; align-items: flex-start;
-            padding-top: 15px; border-top: 1px solid rgba(0,0,0,0.05);
+            padding-top: 15px; border-top: 1px solid var(--border-color);
             z-index: 100;
-            box-shadow: 0 -5px 20px rgba(0,0,0,0.02);
         }
-        .nav-item { display: flex; flex-direction: column; align-items: center; color: #C7C7CC; font-size: 10px; gap: 4px; cursor: pointer; width: 60px; font-weight: 500; }
-        .nav-item i { font-size: 24px; margin-bottom: 2px; transition: transform 0.2s; }
+        .nav-item { display: flex; flex-direction: column; align-items: center; color: var(--text-sub); font-size: 10px; gap: 4px; cursor: pointer; width: 60px; font-weight: 500; }
         .nav-item.active { color: var(--primary); }
-        .nav-item.active i { transform: translateY(-2px); }
+        .nav-item i { font-size: 24px; }
 
-        /* Ortak Buton Stili */
-        .submit-btn {
-            width: 100%; padding: 16px; border-radius: 14px; background: var(--primary); color: white;
-            border: none; font-weight: 700; font-size: 16px; cursor: pointer; margin-top: 10px;
-            box-shadow: 0 5px 15px rgba(139, 0, 0, 0.2);
+        /* Auth Screen */
+        .auth-input { 
+            width: 100%; padding: 16px; margin-bottom: 12px; border-radius: 12px; 
+            border: 1px solid var(--border-color); background: var(--bg-card); 
+            color: var(--text-main); font-size: 16px; 
         }
-        
+
+        /* Gizlenecek öğeler için utility class */
+        .hidden { display: none !important; }
+
     </style>
 </head>
-<body>
-
-    <div id="app">
+<body class=""> <div id="app">
 
         <div id="splash-screen" style="position:absolute; top:0; left:0; width:100%; height:100%; background:radial-gradient(circle,#6a040f,#2a0203); z-index:9999; display:flex; justify-content:center; align-items:center; transition: opacity 0.8s;">
             <img src="./logolab.png" alt="Kahvelab" style="width:160px; filter:drop-shadow(0 0 25px rgba(212,175,55,0.3));">
@@ -243,30 +244,12 @@
         <div id="auth-screen" class="screen">
             <div class="header" style="background:transparent; border:none;">
                 <div class="icon-btn" onclick="navTo('home-screen')"><i class="fa-solid fa-arrow-left"></i></div>
-                <div class="header-title">Giriş Yap</div>
-                <div style="width:20px;"></div>
             </div>
-            
-            <div class="auth-container">
-                <h2 style="font-size:28px; font-weight:800; margin-bottom:10px;">Tekrar<br>Hoş Geldin.</h2>
-                <p style="color:#666; margin-bottom:30px;">Fal yolculuğuna devam etmek için giriş yap.</p>
-
-                <input type="email" id="login-email" class="auth-input" placeholder="E-Posta Adresi">
+            <div style="padding:24px;">
+                <h2 style="font-size:28px; margin-bottom:10px; color:var(--text-main);">Giriş Yap</h2>
+                <input type="email" id="login-email" class="auth-input" placeholder="E-Posta">
                 <input type="password" id="login-password" class="auth-input" placeholder="Şifre">
                 <button class="submit-btn" onclick="loginUser()">Giriş Yap</button>
-
-                <div class="divider"><span>veya bunlarla devam et</span></div>
-
-                <button class="social-btn btn-apple" onclick="alert('Apple Login (Demo)')">
-                    <i class="fa-brands fa-apple" style="font-size:20px;"></i> Apple ile devam et
-                </button>
-                <button class="social-btn btn-google" onclick="alert('Google Login (Demo)')">
-                    <i class="fa-brands fa-google" style="font-size:18px; color: #DB4437;"></i> Google ile devam et
-                </button>
-                
-                <div style="text-align:center; margin-top:20px; font-size:14px; color:#666;">
-                    Hesabın yok mu? <span onclick="alert('Kayıt Formu (Demo)')" style="color:var(--primary); font-weight:700;">Kayıt Ol</span>
-                </div>
             </div>
         </div>
 
@@ -274,14 +257,13 @@
             <div class="header">
                 <div class="icon-btn"><i class="fa-solid fa-bars"></i></div>
                 <div class="header-brand">KahveLab</div>
-                <div style="width:20px;"></div> </div>
+                <div style="width:20px;"></div>
+            </div>
 
             <div class="hero-section">
                 <button class="main-fal-btn" onclick="checkCreditAndStart()">
-                    <div style="position:absolute; width:100%; height:100%; border-radius:50%; border:2px solid var(--primary-light); top:0; left:0; animation:pulse 2s infinite;"></div>
                     FAL<br>GÖNDER
                 </button>
-                
                 <div class="credit-badge-pill">
                     <i class="fa-solid fa-bolt" style="color:var(--gold)"></i>
                     <span id="credit-count">3</span> Hak
@@ -290,34 +272,19 @@
 
             <div class="summary-section">
                 <div class="summary-header">Günün Özeti</div>
-                
                 <div id="lock-overlay" class="lock-overlay">
                     <i class="fa-solid fa-lock" style="font-size:24px; color:var(--primary); margin-bottom:10px;"></i>
-                    <p style="font-size:13px; color:#666; margin-bottom:15px;">Kişisel yorumun için</p>
-                    <button class="lock-btn" onclick="navTo('auth-screen')">Giriş Yap veya Kayıt Ol</button>
+                    <p style="font-size:13px; color:var(--text-sub); margin-bottom:15px;">Kişisel yorumun için</p>
+                    <button class="lock-btn" onclick="navTo('auth-screen')">Giriş Yap</button>
                 </div>
-
                 <div id="summary-content" class="summary-grid locked">
                     <div class="summary-card">
                         <i class="fa-solid fa-star" style="color:var(--gold); font-size:24px;"></i>
-                        <div>
-                            <div style="font-size:11px; color:#999;">GÜNÜN MODU</div>
-                            <div style="font-weight:700;">Parlak</div>
-                        </div>
+                        <div><div style="font-size:11px; color:var(--text-sub);">MOD</div><div style="font-weight:700;">Parlak</div></div>
                     </div>
                     <div class="summary-card">
                         <i class="fa-solid fa-heart" style="color:var(--primary); font-size:24px;"></i>
-                        <div>
-                            <div style="font-size:11px; color:#999;">AŞK</div>
-                            <div style="font-weight:700;">Sürpriz</div>
-                        </div>
-                    </div>
-                    <div class="summary-card">
-                        <i class="fa-solid fa-wallet" style="color:#4CAF50; font-size:24px;"></i>
-                        <div>
-                            <div style="font-size:11px; color:#999;">KARİYER</div>
-                            <div style="font-weight:700;">Yükseliş</div>
-                        </div>
+                        <div><div style="font-size:11px; color:var(--text-sub);">AŞK</div><div style="font-weight:700;">Sürpriz</div></div>
                     </div>
                 </div>
             </div>
@@ -330,141 +297,137 @@
 
             <div class="profile-header">
                 <img src="https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=200" class="avatar-large">
-                <h2 id="profile-name" style="font-size:22px;">Misafir</h2>
-                <p style="color:#999; font-size:14px;">Standart Üye</p>
+                <h2 id="profile-name" style="font-size:22px; color:var(--text-main);">Misafir</h2>
+                <p style="color:var(--text-sub); font-size:14px;">Standart Üye</p>
             </div>
 
             <div class="premium-card-v2">
                 <div style="position:relative; z-index:2;">
-                    <div style="display:flex; justify-content:space-between; align-items:flex-start;">
-                        <div>
-                            <h3 style="color:white; font-size:20px; margin-bottom:5px;">KahveLab <span style="color:var(--gold)">Premium</span></h3>
-                            <p style="color:#ccc; font-size:13px;">Sınırları kaldır, kaderini detaylı öğren.</p>
-                        </div>
-                        <i class="fa-solid fa-crown" style="color:var(--gold); font-size:24px;"></i>
-                    </div>
-                    
-                    <div style="margin-top:20px; display:flex; gap:10px; flex-wrap:wrap;">
-                        <span style="background:rgba(255,255,255,0.1); color:white; padding:5px 10px; border-radius:8px; font-size:11px;">✨ Soru Sor</span>
-                        <span style="background:rgba(255,255,255,0.1); color:white; padding:5px 10px; border-radius:8px; font-size:11px;">🚀 Hızlı Analiz</span>
-                        <span style="background:rgba(255,255,255,0.1); color:white; padding:5px 10px; border-radius:8px; font-size:11px;">💞 İlişki Uyumu</span>
-                    </div>
-
+                    <h3 style="color:white;">KahveLab <span style="color:var(--gold)">Premium</span></h3>
                     <button class="premium-btn">Premium'a Geç ₺99/ay</button>
                 </div>
             </div>
 
             <div class="menu-list">
-                <div class="menu-item" onclick="openSettings()">
-                    <span><i class="fa-solid fa-gear" style="color:#999; margin-right:10px;"></i> Ayarlar</span>
-                    <i class="fa-solid fa-chevron-right" style="color:#ccc; font-size:12px;"></i>
+                <div class="menu-item" onclick="openModal('settings-modal')">
+                    <span><i class="fa-solid fa-gear" style="color:var(--text-sub); margin-right:10px;"></i> Ayarlar</span>
+                    <i class="fa-solid fa-chevron-right" style="color:var(--text-sub); font-size:12px;"></i>
                 </div>
-                <div class="menu-item" style="color:#FF3B30;" onclick="logoutUser()">
+                
+                <div class="menu-item" onclick="openModal('notifications-modal')">
+                    <span><i class="fa-solid fa-bell" style="color:var(--text-sub); margin-right:10px;"></i> Bildirim Ayarları</span>
+                    <i class="fa-solid fa-chevron-right" style="color:var(--text-sub); font-size:12px;"></i>
+                </div>
+
+                <div id="btn-logout-wrapper" class="menu-item hidden" style="color:#FF3B30;" onclick="logoutUser()">
                     <span><i class="fa-solid fa-arrow-right-from-bracket" style="margin-right:10px;"></i> Çıkış Yap</span>
                 </div>
             </div>
         </div>
 
-        <div id="settings-modal">
+        <div id="settings-modal" class="modal-sheet">
             <div class="header">
                 <div class="header-title">Ayarlar</div>
-                <div style="position:absolute; right:24px; color:#007AFF; font-weight:600; cursor:pointer;" onclick="closeSettings()">Kapat</div>
+                <div style="position:absolute; right:24px; color:var(--primary); font-weight:600; cursor:pointer;" onclick="closeModal('settings-modal')">Kapat</div>
             </div>
             
-            <div class="settings-content">
+            <div class="modal-content">
                 <div class="settings-label">TEMA TERCİHİ</div>
                 <div class="settings-group">
                     <div class="segmented-control">
-                        <div class="segment-opt selected"><i class="fa-regular fa-sun"></i> Aydınlık</div>
-                        <div class="segment-opt"><i class="fa-regular fa-moon"></i> Karanlık</div>
-                        <div class="segment-opt"><i class="fa-solid fa-mobile-screen"></i> Sistem</div>
+                        <div class="segment-opt selected" id="theme-light" onclick="setTheme('light')"><i class="fa-regular fa-sun" style="margin-right:5px;"></i> Aydınlık</div>
+                        <div class="segment-opt" id="theme-dark" onclick="setTheme('dark')"><i class="fa-regular fa-moon" style="margin-right:5px;"></i> Karanlık</div>
+                        <div class="segment-opt" id="theme-system" onclick="setTheme('system')"><i class="fa-solid fa-mobile-screen" style="margin-right:5px;"></i> Sistem</div>
                     </div>
                 </div>
 
-                <div class="settings-label">UYGULAMA SİMGESİ</div>
-                <div class="settings-group">
-                    <div class="segmented-control">
-                        <div class="segment-opt selected"><div style="width:10px; height:10px; background:#eee; border-radius:50%; margin-right:5px;"></div> Beyaz</div>
-                        <div class="segment-opt"><div style="width:10px; height:10px; background:#000; border-radius:50%; margin-right:5px;"></div> Siyah</div>
+                <div id="delete-account-wrapper" class="hidden">
+                    <button class="delete-btn">
+                        <i class="fa-regular fa-trash-can"></i> Hesabımı Sil
+                    </button>
+                    <div style="font-size:11px; color:#FF3B30; margin-top:10px; text-align:center;">
+                        Bu işlem geri alınamaz.
                     </div>
-                    <div style="font-size:11px; color:#999; margin-top:10px; text-align:center;">
-                        Not: Ana ekran simgesi değişikliği için uygulamayı tekrar eklemeniz gerekebilir.
-                    </div>
-                </div>
-
-                <button class="delete-btn">
-                    <i class="fa-regular fa-trash-can"></i> Hesabımı Sil
-                </button>
-                <div style="font-size:11px; color:#FF3B30; margin-top:10px; text-align:center;">
-                    Bu işlem geri alınamaz.
                 </div>
             </div>
         </div>
 
-        <div id="ritual-screen" class="screen" style="background:radial-gradient(circle,#2a0845,#1a1a2e); justify-content:center; align-items:center;">
-            <div style="width:180px; height:180px; border-radius:50%; border:4px solid rgba(255,255,255,0.1); display:flex; justify-content:center; align-items:center;">
-                <i class="fa-solid fa-fingerprint" style="font-size:50px; color:rgba(255,255,255,0.5);"></i>
+        <div id="notifications-modal" class="modal-sheet">
+            <div class="header">
+                <div class="header-title">Bildirimler</div>
+                <div style="position:absolute; right:24px; color:var(--primary); font-weight:600; cursor:pointer;" onclick="closeModal('notifications-modal')">Kapat</div>
             </div>
-            <p style="color:white; margin-top:20px;">Enerji Yükleniyor...</p>
+            
+            <div class="modal-content">
+                <div class="settings-label">GENEL BİLDİRİMLER</div>
+                <div class="settings-group">
+                    <div class="toggle-row">
+                        <span>Fal Sonuçları</span>
+                        <label class="switch"><input type="checkbox" checked><span class="slider"></span></label>
+                    </div>
+                    <div class="toggle-row">
+                        <span>Günlük Hatırlatmalar</span>
+                        <label class="switch"><input type="checkbox" checked><span class="slider"></span></label>
+                    </div>
+                    <div class="toggle-row">
+                        <span>Kampanyalar</span>
+                        <label class="switch"><input type="checkbox"><span class="slider"></span></label>
+                    </div>
+                </div>
+                <p style="font-size:12px; color:var(--text-sub); padding:0 10px;">
+                    Bildirim tercihlerinizi buradan anlık olarak yönetebilirsiniz.
+                </p>
+            </div>
         </div>
 
         <div class="bottom-nav">
             <div class="nav-item active" onclick="navTo('home-screen', this)"><i class="fa-solid fa-house"></i><span>Ana Sayfa</span></div>
-            <div class="nav-item" onclick="navTo('home-screen', this)"><i class="fa-solid fa-layer-group"></i><span>Fallar</span></div>
             <div class="nav-item" onclick="navTo('profile-screen', this)"><i class="fa-solid fa-user"></i><span>Hesabım</span></div>
         </div>
 
     </div>
 
-    <script type="module">
-        // Firebase importlarını buraya eklersin (Önceki kod ile aynı)
-        // ...
-        
-        // Basit Login Simülasyonu
-        window.isLoggedIn = false;
-
-        window.loginUser = () => {
-            window.isLoggedIn = true;
-            document.getElementById('profile-name').innerText = "Volkan";
-            // Kilitli içeriği aç
-            document.getElementById('summary-content').classList.remove('locked');
-            document.getElementById('lock-overlay').style.display = 'none';
-            navTo('home-screen');
-        }
-
-        window.logoutUser = () => {
-            window.isLoggedIn = false;
-            document.getElementById('profile-name').innerText = "Misafir";
-            // İçeriği kilitle
-            document.getElementById('summary-content').classList.add('locked');
-            document.getElementById('lock-overlay').style.display = 'flex';
-            navTo('auth-screen');
-        }
-
-        window.checkCreditAndStart = () => {
-            if(!window.isLoggedIn) {
-                alert("Önce giriş yapmalısın güzelim.");
-                navTo('auth-screen');
-            } else {
-                navTo('ritual-screen');
-                setTimeout(() => { navTo('home-screen'); alert("Falın Hazır (Demo)"); }, 3000);
-            }
-        }
-    </script>
-
     <script>
-        // Splash Timer
+        // --- 1. SİSTEM BAŞLANGICI ---
         window.onload = () => {
+            // Splash Timer
             setTimeout(() => {
                 document.getElementById('splash-screen').style.opacity = '0';
-                setTimeout(() => { document.getElementById('splash-screen').style.display='none'; document.getElementById('home-screen').classList.add('active'); }, 800);
+                setTimeout(() => { 
+                    document.getElementById('splash-screen').style.display='none'; 
+                    document.getElementById('home-screen').classList.add('active'); 
+                }, 800);
             }, 2000);
+
+            // Başlangıç Teması (Aydınlık)
+            setTheme('light');
         };
 
+        // --- 2. TEMA YÖNETİMİ ---
+        function setTheme(mode) {
+            // UI Güncelleme (Selected Class)
+            document.querySelectorAll('.segment-opt').forEach(el => el.classList.remove('selected'));
+            document.getElementById('theme-' + mode).classList.add('selected');
+
+            const body = document.body;
+
+            if (mode === 'dark') {
+                body.classList.add('dark-mode');
+            } else if (mode === 'light') {
+                body.classList.remove('dark-mode');
+            } else if (mode === 'system') {
+                // Sistem tercihine bak
+                if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+                    body.classList.add('dark-mode');
+                } else {
+                    body.classList.remove('dark-mode');
+                }
+            }
+        }
+
+        // --- 3. NAVIGASYON ---
         function navTo(screenId, navEl) {
-            document.querySelectorAll('.screen').forEach(s => {
-                if(s.id !== 'splash-screen') s.classList.remove('active');
-            });
+            document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
             document.getElementById(screenId).classList.add('active');
             
             if(navEl) {
@@ -473,14 +436,58 @@
             }
         }
 
-        // Settings Modal Logic
-        function openSettings() {
-            document.getElementById('settings-modal').classList.add('open');
+        function openModal(modalId) { document.getElementById(modalId).classList.add('open'); }
+        function closeModal(modalId) { document.getElementById(modalId).classList.remove('open'); }
+
+        // --- 4. AUTH & VISIBILITY LOGIC ---
+        window.isLoggedIn = false;
+
+        window.loginUser = () => {
+            window.isLoggedIn = true;
+            document.getElementById('profile-name').innerText = "Volkan";
+            
+            // Kilitli içeriği aç
+            document.getElementById('summary-content').classList.remove('locked');
+            document.getElementById('lock-overlay').style.display = 'none';
+
+            updateAuthUI(); // Butonları güncelle
+            navTo('home-screen');
         }
-        function closeSettings() {
-            document.getElementById('settings-modal').classList.remove('open');
+
+        window.logoutUser = () => {
+            window.isLoggedIn = false;
+            document.getElementById('profile-name').innerText = "Misafir";
+            
+            // İçeriği kilitle
+            document.getElementById('summary-content').classList.add('locked');
+            document.getElementById('lock-overlay').style.display = 'flex';
+
+            updateAuthUI(); // Butonları güncelle
+            navTo('auth-screen');
+        }
+
+        // Giriş durumuna göre butonları gizle/göster
+        function updateAuthUI() {
+            const logoutBtn = document.getElementById('btn-logout-wrapper');
+            const deleteAccountBtn = document.getElementById('delete-account-wrapper');
+
+            if (window.isLoggedIn) {
+                logoutBtn.classList.remove('hidden');
+                deleteAccountBtn.classList.remove('hidden');
+            } else {
+                logoutBtn.classList.add('hidden');
+                deleteAccountBtn.classList.add('hidden');
+            }
+        }
+
+        window.checkCreditAndStart = () => {
+            if(!window.isLoggedIn) {
+                alert("Önce giriş yapmalısın güzelim.");
+                navTo('auth-screen');
+            } else {
+                alert("Fal Gönderme İşlemi (Demo)");
+            }
         }
     </script>
-
 </body>
 </html>

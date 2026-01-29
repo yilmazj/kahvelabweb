@@ -5,16 +5,16 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>KahveLab - Premium</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Playfair+Display:wght@700;900&display=swap" rel="stylesheet">
     
     <style>
         :root {
-            /* Renk Paleti (Aydınlık - Varsayılan) */
+            /* Renk Paleti (Aydınlık) */
             --primary: #8B0000;
             --primary-light: #D92546;
             --gold: #FFD700;
             
-            --bg-body: #F2F2F7; /* iOS Gri Arkaplan */
+            --bg-body: #F2F2F7;
             --bg-card: #FFFFFF;
             --bg-header: rgba(255, 255, 255, 0.85);
             
@@ -22,11 +22,11 @@
             --text-sub: #8E8E93;
             --border-color: #E5E5EA;
             
-            --nav-height: 85px;
+            --nav-height: 90px; /* iPhone bar yüksekliği */
             --ios-blur: 20px;
         }
 
-        /* KARANLIK MOD (CSS Class ile tetiklenecek) */
+        /* KARANLIK MOD */
         body.dark-mode {
             --bg-body: #000000;
             --bg-card: #1C1C1E;
@@ -39,128 +39,150 @@
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; -webkit-tap-highlight-color: transparent; }
 
         body {
-            background-color: #000; /* Dış çerçeve her zaman siyah kalsın */
-            display: flex;
-            justify-content: center;
-            height: 100vh;
-            overflow: hidden;
-            user-select: none;
+            background-color: #000;
+            display: flex; justify-content: center; height: 100vh; overflow: hidden; user-select: none;
         }
 
         #app {
-            width: 100%;
-            max-width: 414px;
-            height: 100%;
-            background-color: var(--bg-body);
-            color: var(--text-main);
-            position: relative;
-            overflow: hidden;
-            display: flex;
-            flex-direction: column;
+            width: 100%; max-width: 414px; height: 100%;
+            background-color: var(--bg-body); color: var(--text-main);
+            position: relative; overflow: hidden; display: flex; flex-direction: column;
             transition: background-color 0.3s ease;
         }
 
-        /* --- ORTAK UI --- */
         .screen {
-            display: none;
-            flex-direction: column;
-            height: 100%;
-            width: 100%;
-            overflow-y: auto;
-            padding-bottom: var(--nav-height);
-            background: var(--bg-body);
-            animation: fadeIn 0.4s ease;
+            display: none; flex-direction: column; height: 100%; width: 100%;
+            overflow-y: auto; padding-bottom: var(--nav-height);
+            background: var(--bg-body); animation: fadeIn 0.4s ease;
         }
         .screen.active { display: flex; }
-
         @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        .hidden { display: none !important; }
 
-        /* iOS Style Header */
+        /* --- HEADER --- */
         .header {
-            padding: 15px 24px;
-            padding-top: 50px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
+            padding: 15px 24px; padding-top: 50px;
+            display: flex; justify-content: space-between; align-items: center;
             background: var(--bg-header);
-            backdrop-filter: blur(var(--ios-blur));
-            -webkit-backdrop-filter: blur(var(--ios-blur));
-            position: sticky;
-            top: 0;
-            z-index: 20;
+            backdrop-filter: blur(var(--ios-blur)); -webkit-backdrop-filter: blur(var(--ios-blur));
+            position: sticky; top: 0; z-index: 20;
             border-bottom: 1px solid var(--border-color);
-            transition: background 0.3s;
         }
-        .header-brand { font-size: 24px; font-weight: 800; color: var(--primary); letter-spacing: -0.5px; }
+        /* Logo Fontu */
+        .header-brand { 
+            font-family: 'Playfair Display', serif; 
+            font-size: 26px; font-weight: 900; 
+            color: var(--primary); letter-spacing: -0.5px; 
+            width: 100%; text-align: center;
+        }
         .header-title { font-size: 17px; font-weight: 600; color: var(--text-main); position: absolute; left: 50%; transform: translateX(-50%); }
-        .icon-btn { background: none; border: none; font-size: 20px; color: var(--primary); cursor: pointer; }
+        .icon-btn { background: none; border: none; font-size: 20px; color: var(--primary); cursor: pointer; position: absolute; left: 24px;}
 
-        /* --- UI Components --- */
+        /* --- AUTH EKRANI --- */
+        .auth-tabs { display: flex; margin-bottom: 20px; background: var(--border-color); padding: 4px; border-radius: 12px; }
+        .auth-tab {
+            flex: 1; padding: 10px; text-align: center; font-size: 13px; font-weight: 600;
+            border-radius: 9px; cursor: pointer; color: var(--text-sub); transition: all 0.2s;
+        }
+        .auth-tab.active { background: var(--bg-card); color: var(--text-main); box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+        
+        .auth-input { 
+            width: 100%; padding: 16px; margin-bottom: 12px; border-radius: 12px; 
+            border: 1px solid var(--border-color); background: var(--bg-card); 
+            color: var(--text-main); font-size: 15px; 
+        }
+        
+        /* Sosyal Butonlar */
+        .social-btn {
+            width: 100%; padding: 14px; border-radius: 12px;
+            display: flex; align-items: center; justify-content: center; gap: 10px;
+            font-size: 14px; font-weight: 600; cursor: pointer; margin-bottom: 10px;
+            transition: transform 0.1s; border: 1px solid var(--border-color);
+            background: var(--bg-card); color: var(--text-main);
+        }
+        .social-btn:active { transform: scale(0.98); }
+        .social-btn.fb { color: #1877F2; }
+        .social-btn.google { color: #DB4437; }
+        .social-btn.apple { color: var(--text-main); }
+
+        .divider { display: flex; align-items: center; margin: 20px 0; color: var(--text-sub); font-size: 12px; }
+        .divider::before, .divider::after { content: ""; flex: 1; height: 1px; background: var(--border-color); }
+        .divider span { margin: 0 10px; }
+
         .submit-btn {
             width: 100%; padding: 16px; border-radius: 14px; background: var(--primary); color: white;
             border: none; font-weight: 700; font-size: 16px; cursor: pointer; margin-top: 10px;
             box-shadow: 0 5px 15px rgba(139, 0, 0, 0.2);
         }
 
-        /* --- ANA SAYFA ELEMENTLERİ --- */
+        /* --- ANA SAYFA --- */
         .hero-section {
-            padding: 40px 0; display: flex; flex-direction: column; align-items: center;
+            padding: 30px 0; display: flex; flex-direction: column; align-items: center;
             background: linear-gradient(180deg, var(--bg-card) 0%, var(--bg-body) 100%);
         }
         .main-fal-btn {
-            width: 160px; height: 160px; border-radius: 50%;
+            width: 150px; height: 150px; border-radius: 50%;
             background: linear-gradient(135deg, var(--primary-light), var(--primary));
-            color: white; border: none; font-size: 20px; font-weight: 700; line-height: 1.2;
-            box-shadow: 0 15px 40px rgba(139, 0, 0, 0.3); z-index: 2; cursor: pointer; position: relative;
+            color: white; border: none; font-size: 18px; font-weight: 700;
+            box-shadow: 0 10px 30px rgba(139, 0, 0, 0.3); z-index: 2; cursor: pointer; position: relative;
         }
         .credit-badge-pill {
-            margin-top: 20px; background: var(--bg-card); padding: 8px 16px; border-radius: 20px;
-            font-size: 13px; font-weight: 600; color: var(--primary);
-            box-shadow: 0 4px 15px rgba(0,0,0,0.08); border: 1px solid var(--border-color);
-            display: flex; align-items: center; gap: 6px;
+            margin-top: 15px; background: var(--bg-card); padding: 6px 14px; border-radius: 20px;
+            font-size: 12px; font-weight: 600; color: var(--primary);
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05); border: 1px solid var(--border-color);
+            display: flex; align-items: center; gap: 5px;
         }
 
-        /* Özet Kartları */
-        .summary-section { padding: 24px; position: relative; }
-        .summary-header { font-size: 20px; font-weight: 700; margin-bottom: 15px; color: var(--text-main); }
-        .summary-grid { display: flex; gap: 12px; overflow-x: auto; padding-bottom: 10px; }
+        /* Özet & Fallar */
+        .section-title { font-size: 18px; font-weight: 700; margin: 24px 24px 15px 24px; color: var(--text-main); }
+        .summary-grid { display: flex; gap: 12px; overflow-x: auto; padding: 0 24px 20px 24px; scrollbar-width: none; }
         .summary-card {
-            min-width: 120px; height: 140px; background: var(--bg-card); border-radius: 18px; padding: 16px;
+            min-width: 110px; height: 130px; background: var(--bg-card); border-radius: 16px; padding: 14px;
             display: flex; flex-direction: column; justify-content: space-between;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.03); border: 1px solid var(--border-color);
+            box-shadow: 0 2px 10px rgba(0,0,0,0.03); border: 1px solid var(--border-color);
         }
-        .summary-grid.locked { filter: blur(8px); pointer-events: none; }
+        .summary-grid.locked { filter: blur(6px); pointer-events: none; }
         .lock-overlay {
-            position: absolute; top: 60px; left: 0; width: 100%; height: 140px;
+            position: absolute; width: 100%; height: 140px; top:60px;
             display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 10;
         }
-        .lock-btn {
-            background: rgba(0,0,0,0.8); color: white; padding: 12px 24px; border-radius: 25px;
-            border: none; font-weight: 600; font-size: 13px; cursor: pointer;
+        
+        /* Fallarım Listesi */
+        .fortune-row {
+            display: flex; gap: 15px; padding: 0 24px 20px 24px; overflow-x: auto;
         }
+        .fortune-item {
+            min-width: 140px; background: var(--bg-card); padding: 10px; border-radius: 12px;
+            border: 1px solid var(--border-color); display: flex; flex-direction: column; gap: 5px;
+        }
+        .fortune-date { font-size: 10px; color: var(--text-sub); }
+        .fortune-preview { font-size: 12px; font-weight: 600; color: var(--text-main); }
+        .fortune-img { width: 100%; height: 80px; object-fit: cover; border-radius: 8px; margin-bottom: 5px; }
 
-        /* --- HESABIM --- */
-        .profile-header { text-align: center; padding: 30px 24px; background: var(--bg-card); border-bottom: 1px solid var(--border-color); }
-        .avatar-large { width: 90px; height: 90px; border-radius: 50%; object-fit: cover; border: 3px solid var(--primary); margin-bottom: 10px; }
-
+        /* --- PREMIUM KART (Hesabım) --- */
         .premium-card-v2 {
             margin: 20px 24px; background: linear-gradient(135deg, #1C1C1E 0%, #000000 100%);
             border-radius: 20px; padding: 24px; position: relative; overflow: hidden;
-            border: 1px solid rgba(255, 215, 0, 0.2); box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            border: 1px solid rgba(255, 215, 0, 0.3); box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+        .premium-feature-list { margin-top: 15px; list-style: none; }
+        .premium-feature-list li { 
+            color: #ccc; font-size: 13px; margin-bottom: 8px; display: flex; align-items: center; gap: 8px; 
         }
         .premium-btn {
             background: linear-gradient(90deg, #FFD700, #FDB931); color: black; border: none; 
-            padding: 14px; width: 100%; border-radius: 12px; font-weight: 700; margin-top: 20px; cursor: pointer;
+            padding: 12px; width: 100%; border-radius: 10px; font-weight: 700; margin-top: 15px; cursor: pointer;
         }
 
+        /* --- MENÜ LİSTESİ --- */
         .menu-list { padding: 0 24px; }
         .menu-item {
             display: flex; align-items: center; justify-content: space-between;
-            background: var(--bg-card); padding: 18px; border-radius: 14px; margin-bottom: 10px;
-            font-weight: 500; cursor: pointer; border: 1px solid var(--border-color); color: var(--text-main);
+            background: var(--bg-card); padding: 16px; border-radius: 12px; margin-bottom: 10px;
+            font-weight: 500; cursor: pointer; border: 1px solid var(--border-color); color: var(--text-main); font-size: 14px;
         }
 
-        /* --- MODAL TASARIMLARI (Ayarlar & Bildirimler) --- */
+        /* --- MODALS (Ayarlar vs) --- */
         .modal-sheet {
             position: fixed; bottom: -100%; left: 0; width: 100%; height: 100%;
             background: var(--bg-body); z-index: 200; 
@@ -168,74 +190,30 @@
             display: flex; flex-direction: column;
         }
         .modal-sheet.open { bottom: 0; }
-        
-        .modal-content { padding: 24px; overflow-y: auto; }
-        
-        /* Kart Grupları (Görseldeki gibi) */
-        .settings-group {
-            background: var(--bg-card); border-radius: 12px; padding: 20px; margin-bottom: 24px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.02);
-        }
-        .settings-label { 
-            font-size: 12px; text-transform: uppercase; color: var(--text-sub); 
-            margin-bottom: 8px; letter-spacing: 0.5px; padding-left: 10px; 
-        }
-        
-        /* Segmented Control (Tema Seçici) */
-        .segmented-control {
-            display: flex; background: rgba(118, 118, 128, 0.12); border-radius: 9px; padding: 2px;
-            height: 40px; width: 100%;
-        }
-        .segment-opt {
-            flex: 1; display: flex; align-items: center; justify-content: center;
-            font-size: 13px; font-weight: 500; border-radius: 7px; cursor: pointer; color: var(--text-main);
-            transition: all 0.2s;
-        }
-        .segment-opt.selected { 
-            background: var(--bg-card); 
-            box-shadow: 0 3px 8px rgba(0,0,0,0.12); 
-            font-weight: 600; 
-            color: var(--primary); /* Seçili olunca KahveLab rengi */
-        }
-        
-        /* Toggle Switch (Bildirimler için) */
-        .toggle-row { display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px solid var(--border-color); }
-        .toggle-row:last-child { border-bottom: none; }
-        .switch { position: relative; display: inline-block; width: 50px; height: 30px; }
-        .switch input { opacity: 0; width: 0; height: 0; }
-        .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #ccc; transition: .4s; border-radius: 34px; }
-        .slider:before { position: absolute; content: ""; height: 26px; width: 26px; left: 2px; bottom: 2px; background-color: white; transition: .4s; border-radius: 50%; }
-        input:checked + .slider { background-color: var(--primary); }
-        input:checked + .slider:before { transform: translateX(20px); }
+        .settings-group { background: var(--bg-card); border-radius: 12px; padding: 15px; margin-bottom: 20px; border: 1px solid var(--border-color); }
+        .settings-label { font-size: 11px; color: var(--text-sub); margin-bottom: 8px; padding-left: 5px; text-transform: uppercase; }
 
-        .delete-btn { width: 100%; padding: 15px; background: rgba(255, 59, 48, 0.1); color: #FF3B30; border: none; border-radius: 12px; font-weight: 600; cursor: pointer; }
-
-        /* --- BOTTOM NAV --- */
+        /* --- BOTTOM NAV (Premium Glass Style) --- */
         .bottom-nav {
             position: absolute; bottom: 0; width: 100%; height: var(--nav-height);
-            background: var(--bg-header);
-            backdrop-filter: blur(var(--ios-blur)); -webkit-backdrop-filter: blur(var(--ios-blur));
+            background: rgba(255,255,255,0.85); /* Default Light */
+            backdrop-filter: blur(30px); -webkit-backdrop-filter: blur(30px);
             display: flex; justify-content: space-around; align-items: flex-start;
-            padding-top: 15px; border-top: 1px solid var(--border-color);
+            padding-top: 15px; border-top: 1px solid rgba(0,0,0,0.1);
             z-index: 100;
         }
-        .nav-item { display: flex; flex-direction: column; align-items: center; color: var(--text-sub); font-size: 10px; gap: 4px; cursor: pointer; width: 60px; font-weight: 500; }
+        body.dark-mode .bottom-nav { background: rgba(20,20,20,0.85); border-top: 1px solid rgba(255,255,255,0.1); }
+        
+        .nav-item { display: flex; flex-direction: column; align-items: center; color: var(--text-sub); font-size: 10px; gap: 5px; cursor: pointer; width: 60px; font-weight: 500; }
         .nav-item.active { color: var(--primary); }
-        .nav-item i { font-size: 24px; }
-
-        /* Auth Screen */
-        .auth-input { 
-            width: 100%; padding: 16px; margin-bottom: 12px; border-radius: 12px; 
-            border: 1px solid var(--border-color); background: var(--bg-card); 
-            color: var(--text-main); font-size: 16px; 
-        }
-
-        /* Gizlenecek öğeler için utility class */
-        .hidden { display: none !important; }
+        .nav-item i { font-size: 22px; transition: transform 0.2s; }
+        .nav-item.active i { transform: translateY(-3px); }
 
     </style>
 </head>
-<body class=""> <div id="app">
+<body class="">
+
+    <div id="app">
 
         <div id="splash-screen" style="position:absolute; top:0; left:0; width:100%; height:100%; background:radial-gradient(circle,#6a040f,#2a0203); z-index:9999; display:flex; justify-content:center; align-items:center; transition: opacity 0.8s;">
             <img src="./logolab.png" alt="Kahvelab" style="width:160px; filter:drop-shadow(0 0 25px rgba(212,175,55,0.3));">
@@ -245,23 +223,74 @@
             <div class="header" style="background:transparent; border:none;">
                 <div class="icon-btn" onclick="navTo('home-screen')"><i class="fa-solid fa-arrow-left"></i></div>
             </div>
-            <div style="padding:24px;">
-                <h2 style="font-size:28px; margin-bottom:10px; color:var(--text-main);">Giriş Yap</h2>
-                <input type="email" id="login-email" class="auth-input" placeholder="E-Posta">
-                <input type="password" id="login-password" class="auth-input" placeholder="Şifre">
-                <button class="submit-btn" onclick="loginUser()">Giriş Yap</button>
+            
+            <div style="padding: 24px;">
+                <h2 style="font-size:28px; font-weight:800; margin-bottom:20px; color:var(--text-main);">Hoş Geldin</h2>
+
+                <div class="auth-tabs">
+                    <div class="auth-tab active" id="tab-login" onclick="switchAuthTab('login')">Giriş Yap</div>
+                    <div class="auth-tab" id="tab-register" onclick="switchAuthTab('register')">Kayıt Ol</div>
+                </div>
+
+                <div id="form-login">
+                    <input type="email" id="login-email" class="auth-input" placeholder="E-Posta">
+                    <input type="password" id="login-pass" class="auth-input" placeholder="Şifre">
+                    <button class="submit-btn" onclick="handleLogin()">Giriş Yap</button>
+                    
+                    <div class="divider"><span>veya</span></div>
+                    
+                    <div class="social-btn apple"><i class="fa-brands fa-apple"></i> Apple ile devam et</div>
+                    <div class="social-btn google"><i class="fa-brands fa-google"></i> Google ile devam et</div>
+                    <div class="social-btn fb"><i class="fa-brands fa-facebook"></i> Facebook ile devam et</div>
+                </div>
+
+                <div id="form-register" class="hidden">
+                    <input type="email" id="reg-email" class="auth-input" placeholder="E-Posta">
+                    <input type="password" id="reg-pass" class="auth-input" placeholder="Şifre Oluştur">
+                    <button class="submit-btn" onclick="handleRegister('email')">Kayıt Ol</button>
+
+                    <div class="divider"><span>veya sosyal hesapla</span></div>
+
+                    <div class="social-btn apple" onclick="handleSocialRegister('Apple')"><i class="fa-brands fa-apple"></i> Apple ile Kayıt Ol</div>
+                    <div class="social-btn google" onclick="handleSocialRegister('Google')"><i class="fa-brands fa-google"></i> Google ile Kayıt Ol</div>
+                    <div class="social-btn fb" onclick="handleSocialRegister('Facebook')"><i class="fa-brands fa-facebook"></i> Facebook ile Kayıt Ol</div>
+                </div>
+            </div>
+        </div>
+
+        <div id="social-complete-modal" class="modal-sheet">
+            <div class="header">
+                <div class="header-title">Bilgilerini Tamamla</div>
+                <div style="position:absolute; right:24px; color:var(--primary); font-weight:600; cursor:pointer;" onclick="closeModal('social-complete-modal')">İptal</div>
+            </div>
+            <div style="padding: 24px;">
+                <p style="color:var(--text-sub); font-size:14px; margin-bottom:20px;">
+                    <span id="social-provider-name"></span> hesabın doğrulandı. Fal analizi için bu bilgilere ihtiyacımız var.
+                </p>
+                <div class="settings-label">DOĞUM TARİHİ</div>
+                <input type="date" class="auth-input">
+                
+                <div class="settings-label">BURÇ</div>
+                <select class="auth-input">
+                    <option>Koç</option><option>Boğa</option><option>İkizler</option>
+                    <option>Yengeç</option><option>Aslan</option><option>Başak</option>
+                    </select>
+
+                <div class="settings-label">MESLEK / DURUM</div>
+                <input type="text" class="auth-input" placeholder="Örn: Öğrenci, Mühendis">
+
+                <button class="submit-btn" onclick="finalizeSocialLogin()">Kaydı Tamamla</button>
             </div>
         </div>
 
         <div id="home-screen" class="screen">
-            <div class="header">
-                <div class="icon-btn"><i class="fa-solid fa-bars"></i></div>
+            <div class="header" style="justify-content: center;">
                 <div class="header-brand">KahveLab</div>
-                <div style="width:20px;"></div>
             </div>
 
             <div class="hero-section">
                 <button class="main-fal-btn" onclick="checkCreditAndStart()">
+                    <div style="position:absolute; width:100%; height:100%; border-radius:50%; border:2px solid var(--primary-light); top:0; left:0; animation:pulse 2s infinite;"></div>
                     FAL<br>GÖNDER
                 </button>
                 <div class="credit-badge-pill">
@@ -270,24 +299,51 @@
                 </div>
             </div>
 
-            <div class="summary-section">
-                <div class="summary-header">Günün Özeti</div>
+            <div style="position: relative;">
+                <div class="section-title">Günün Özeti</div>
+                
                 <div id="lock-overlay" class="lock-overlay">
                     <i class="fa-solid fa-lock" style="font-size:24px; color:var(--primary); margin-bottom:10px;"></i>
-                    <p style="font-size:13px; color:var(--text-sub); margin-bottom:15px;">Kişisel yorumun için</p>
-                    <button class="lock-btn" onclick="navTo('auth-screen')">Giriş Yap</button>
+                    <p style="font-size:13px; color:var(--text-sub); margin-bottom:15px;">Özel yorumun için</p>
+                    <button class="submit-btn" style="width:auto; padding: 8px 20px; font-size:13px;" onclick="navTo('auth-screen')">Giriş Yap</button>
                 </div>
+
                 <div id="summary-content" class="summary-grid locked">
                     <div class="summary-card">
                         <i class="fa-solid fa-star" style="color:var(--gold); font-size:24px;"></i>
-                        <div><div style="font-size:11px; color:var(--text-sub);">MOD</div><div style="font-weight:700;">Parlak</div></div>
+                        <div><div style="font-size:10px; color:var(--text-sub);">MOD</div><div style="font-weight:700; font-size:14px;">Parlak</div></div>
                     </div>
                     <div class="summary-card">
                         <i class="fa-solid fa-heart" style="color:var(--primary); font-size:24px;"></i>
-                        <div><div style="font-size:11px; color:var(--text-sub);">AŞK</div><div style="font-weight:700;">Sürpriz</div></div>
+                        <div><div style="font-size:10px; color:var(--text-sub);">AŞK</div><div style="font-weight:700; font-size:14px;">Sürpriz</div></div>
+                    </div>
+                    <div class="summary-card">
+                        <div style="width:24px; height:24px; border-radius:50%; background:#9b59b6;"></div>
+                        <div><div style="font-size:10px; color:var(--text-sub);">RENK</div><div style="font-weight:700; font-size:14px;">Mor</div></div>
+                    </div>
+                    <div class="summary-card" style="min-width:140px;">
+                        <i class="fa-solid fa-quote-left" style="color:#333; font-size:20px;"></i>
+                        <div><div style="font-size:10px; color:var(--text-sub);">MOTTO</div><div style="font-weight:600; font-size:12px;">Akışına bırak.</div></div>
                     </div>
                 </div>
             </div>
+
+            <div id="past-fortunes-section" class="hidden">
+                <div class="section-title">Geçmiş Fallarım</div>
+                <div class="fortune-row">
+                    <div class="fortune-item">
+                        <img src="https://images.unsplash.com/photo-1514432324607-a09d9b4aefdd" class="fortune-img">
+                        <span class="fortune-date">Dün, 14:00</span>
+                        <span class="fortune-preview">Yolun açık...</span>
+                    </div>
+                    <div class="fortune-item">
+                        <img src="https://images.unsplash.com/photo-1509042239860-f550ce710b93" class="fortune-img">
+                        <span class="fortune-date">25 Ocak</span>
+                        <span class="fortune-preview">Haber var...</span>
+                    </div>
+                </div>
+            </div>
+
         </div>
 
         <div id="profile-screen" class="screen">
@@ -295,15 +351,25 @@
                 <div class="header-title">Hesabım</div>
             </div>
 
-            <div class="profile-header">
-                <img src="https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=200" class="avatar-large">
+            <div class="profile-header" style="background:var(--bg-card); border-bottom:1px solid var(--border-color); text-align:center; padding:30px;">
+                <img src="https://images.unsplash.com/photo-1535713875002-d1d0cf377fde" class="avatar-large" style="width:90px; height:90px; border-radius:50%; border:3px solid var(--primary); margin-bottom:10px;">
                 <h2 id="profile-name" style="font-size:22px; color:var(--text-main);">Misafir</h2>
                 <p style="color:var(--text-sub); font-size:14px;">Standart Üye</p>
             </div>
 
             <div class="premium-card-v2">
                 <div style="position:relative; z-index:2;">
-                    <h3 style="color:white;">KahveLab <span style="color:var(--gold)">Premium</span></h3>
+                    <div style="display:flex; justify-content:space-between; align-items:center;">
+                        <h3 style="color:white; font-size:18px;">KahveLab <span style="color:var(--gold)">Premium</span></h3>
+                        <i class="fa-solid fa-crown" style="color:var(--gold); font-size:22px;"></i>
+                    </div>
+                    
+                    <ul class="premium-feature-list">
+                        <li><i class="fa-solid fa-check" style="color:var(--gold)"></i> Falcıya 1 Soru Sorma Hakkı</li>
+                        <li><i class="fa-solid fa-check" style="color:var(--gold)"></i> Detaylı İlişki & Sinastri Analizi</li>
+                        <li><i class="fa-solid fa-check" style="color:var(--gold)"></i> Reklamsız & Öncelikli Deneyim</li>
+                    </ul>
+
                     <button class="premium-btn">Premium'a Geç ₺99/ay</button>
                 </div>
             </div>
@@ -330,102 +396,122 @@
                 <div class="header-title">Ayarlar</div>
                 <div style="position:absolute; right:24px; color:var(--primary); font-weight:600; cursor:pointer;" onclick="closeModal('settings-modal')">Kapat</div>
             </div>
-            
-            <div class="modal-content">
+            <div style="padding: 24px;">
                 <div class="settings-label">TEMA TERCİHİ</div>
                 <div class="settings-group">
-                    <div class="segmented-control">
-                        <div class="segment-opt selected" id="theme-light" onclick="setTheme('light')"><i class="fa-regular fa-sun" style="margin-right:5px;"></i> Aydınlık</div>
-                        <div class="segment-opt" id="theme-dark" onclick="setTheme('dark')"><i class="fa-regular fa-moon" style="margin-right:5px;"></i> Karanlık</div>
-                        <div class="segment-opt" id="theme-system" onclick="setTheme('system')"><i class="fa-solid fa-mobile-screen" style="margin-right:5px;"></i> Sistem</div>
+                    <div style="display:flex; background:rgba(128,128,128,0.1); padding:2px; border-radius:8px;">
+                        <div style="flex:1; padding:8px; text-align:center; background:var(--bg-card); border-radius:6px; box-shadow:0 2px 4px rgba(0,0,0,0.1); font-size:13px;" onclick="setTheme('light')">Aydınlık</div>
+                        <div style="flex:1; padding:8px; text-align:center; font-size:13px; color:var(--text-sub);" onclick="setTheme('dark')">Karanlık</div>
                     </div>
                 </div>
 
                 <div id="delete-account-wrapper" class="hidden">
-                    <button class="delete-btn">
-                        <i class="fa-regular fa-trash-can"></i> Hesabımı Sil
-                    </button>
-                    <div style="font-size:11px; color:#FF3B30; margin-top:10px; text-align:center;">
-                        Bu işlem geri alınamaz.
-                    </div>
+                    <button class="submit-btn" style="background:rgba(255,59,48,0.1); color:#FF3B30; box-shadow:none;">Hesabımı Sil</button>
+                    <div style="font-size:11px; color:#FF3B30; margin-top:10px; text-align:center;">Bu işlem geri alınamaz.</div>
                 </div>
             </div>
         </div>
-
+        
         <div id="notifications-modal" class="modal-sheet">
             <div class="header">
                 <div class="header-title">Bildirimler</div>
                 <div style="position:absolute; right:24px; color:var(--primary); font-weight:600; cursor:pointer;" onclick="closeModal('notifications-modal')">Kapat</div>
             </div>
-            
-            <div class="modal-content">
-                <div class="settings-label">GENEL BİLDİRİMLER</div>
+            <div style="padding:24px;">
                 <div class="settings-group">
-                    <div class="toggle-row">
-                        <span>Fal Sonuçları</span>
-                        <label class="switch"><input type="checkbox" checked><span class="slider"></span></label>
-                    </div>
-                    <div class="toggle-row">
-                        <span>Günlük Hatırlatmalar</span>
-                        <label class="switch"><input type="checkbox" checked><span class="slider"></span></label>
-                    </div>
-                    <div class="toggle-row">
-                        <span>Kampanyalar</span>
-                        <label class="switch"><input type="checkbox"><span class="slider"></span></label>
+                    <div style="display:flex; justify-content:space-between; padding:10px 0;">
+                        <span>Fal Sonuçları</span><i class="fa-solid fa-toggle-on" style="color:var(--primary); font-size:24px;"></i>
                     </div>
                 </div>
-                <p style="font-size:12px; color:var(--text-sub); padding:0 10px;">
-                    Bildirim tercihlerinizi buradan anlık olarak yönetebilirsiniz.
-                </p>
             </div>
         </div>
 
         <div class="bottom-nav">
-            <div class="nav-item active" onclick="navTo('home-screen', this)"><i class="fa-solid fa-house"></i><span>Ana Sayfa</span></div>
-            <div class="nav-item" onclick="navTo('profile-screen', this)"><i class="fa-solid fa-user"></i><span>Hesabım</span></div>
+            <div class="nav-item active" onclick="navTo('home-screen', this)">
+                <i class="fa-solid fa-house"></i><span>Ana Sayfa</span>
+            </div>
+            <div class="nav-item" onclick="navTo('home-screen', this)"> <i class="fa-solid fa-layer-group"></i><span>Fallar</span>
+            </div>
+            <div class="nav-item" onclick="navTo('profile-screen', this)">
+                <i class="fa-solid fa-user"></i><span>Hesabım</span>
+            </div>
         </div>
 
     </div>
 
     <script>
-        // --- 1. SİSTEM BAŞLANGICI ---
-        window.onload = () => {
-            // Splash Timer
-            setTimeout(() => {
-                document.getElementById('splash-screen').style.opacity = '0';
-                setTimeout(() => { 
-                    document.getElementById('splash-screen').style.display='none'; 
-                    document.getElementById('home-screen').classList.add('active'); 
-                }, 800);
-            }, 2000);
+        // --- AUTH LOGIC ---
+        let currentAuthTab = 'login';
 
-            // Başlangıç Teması (Aydınlık)
-            setTheme('light');
-        };
+        function switchAuthTab(tab) {
+            currentAuthTab = tab;
+            document.querySelectorAll('.auth-tab').forEach(t => t.classList.remove('active'));
+            document.getElementById('tab-' + tab).classList.add('active');
 
-        // --- 2. TEMA YÖNETİMİ ---
-        function setTheme(mode) {
-            // UI Güncelleme (Selected Class)
-            document.querySelectorAll('.segment-opt').forEach(el => el.classList.remove('selected'));
-            document.getElementById('theme-' + mode).classList.add('selected');
-
-            const body = document.body;
-
-            if (mode === 'dark') {
-                body.classList.add('dark-mode');
-            } else if (mode === 'light') {
-                body.classList.remove('dark-mode');
-            } else if (mode === 'system') {
-                // Sistem tercihine bak
-                if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
-                    body.classList.add('dark-mode');
-                } else {
-                    body.classList.remove('dark-mode');
-                }
+            if(tab === 'login') {
+                document.getElementById('form-login').classList.remove('hidden');
+                document.getElementById('form-register').classList.add('hidden');
+            } else {
+                document.getElementById('form-login').classList.add('hidden');
+                document.getElementById('form-register').classList.remove('hidden');
             }
         }
 
-        // --- 3. NAVIGASYON ---
+        // 1. Normal Giriş
+        function handleLogin() {
+            const email = document.getElementById('login-email').value;
+            const pass = document.getElementById('login-pass').value;
+            
+            if(!email || !pass) { alert("Lütfen bilgileri gir."); return; }
+            
+            completeLogin("Volkan");
+        }
+
+        // 2. Sosyal Kayıt (Detay İsteme)
+        function handleSocialRegister(provider) {
+            // Modal aç, bilgileri sor
+            document.getElementById('social-provider-name').innerText = provider;
+            openModal('social-complete-modal');
+        }
+
+        // 3. Sosyal Kayıt Tamamla
+        function finalizeSocialLogin() {
+            closeModal('social-complete-modal');
+            completeLogin("Volkan (Sosyal)");
+        }
+
+        function completeLogin(name) {
+            window.isLoggedIn = true;
+            document.getElementById('profile-name').innerText = name;
+            
+            // Kilitleri Aç
+            document.getElementById('summary-content').classList.remove('locked');
+            document.getElementById('lock-overlay').style.display = 'none';
+            document.getElementById('past-fortunes-section').classList.remove('hidden');
+            
+            // Butonları Göster
+            document.getElementById('btn-logout-wrapper').classList.remove('hidden');
+            document.getElementById('delete-account-wrapper').classList.remove('hidden');
+
+            navTo('home-screen');
+        }
+
+        function logoutUser() {
+            window.isLoggedIn = false;
+            document.getElementById('profile-name').innerText = "Misafir";
+            
+            // Kilitle
+            document.getElementById('summary-content').classList.add('locked');
+            document.getElementById('lock-overlay').style.display = 'flex';
+            document.getElementById('past-fortunes-section').classList.add('hidden');
+
+            document.getElementById('btn-logout-wrapper').classList.add('hidden');
+            document.getElementById('delete-account-wrapper').classList.add('hidden');
+            
+            navTo('auth-screen');
+        }
+
+        // --- NAVIGATION ---
         function navTo(screenId, navEl) {
             document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
             document.getElementById(screenId).classList.add('active');
@@ -435,58 +521,17 @@
                 navEl.classList.add('active');
             }
         }
-
-        function openModal(modalId) { document.getElementById(modalId).classList.add('open'); }
-        function closeModal(modalId) { document.getElementById(modalId).classList.remove('open'); }
-
-        // --- 4. AUTH & VISIBILITY LOGIC ---
-        window.isLoggedIn = false;
-
-        window.loginUser = () => {
-            window.isLoggedIn = true;
-            document.getElementById('profile-name').innerText = "Volkan";
-            
-            // Kilitli içeriği aç
-            document.getElementById('summary-content').classList.remove('locked');
-            document.getElementById('lock-overlay').style.display = 'none';
-
-            updateAuthUI(); // Butonları güncelle
-            navTo('home-screen');
+        
+        function openModal(id) { document.getElementById(id).classList.add('open'); }
+        function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+        
+        function setTheme(mode) {
+            if(mode === 'dark') document.body.classList.add('dark-mode');
+            else document.body.classList.remove('dark-mode');
         }
 
-        window.logoutUser = () => {
-            window.isLoggedIn = false;
-            document.getElementById('profile-name').innerText = "Misafir";
-            
-            // İçeriği kilitle
-            document.getElementById('summary-content').classList.add('locked');
-            document.getElementById('lock-overlay').style.display = 'flex';
-
-            updateAuthUI(); // Butonları güncelle
-            navTo('auth-screen');
-        }
-
-        // Giriş durumuna göre butonları gizle/göster
-        function updateAuthUI() {
-            const logoutBtn = document.getElementById('btn-logout-wrapper');
-            const deleteAccountBtn = document.getElementById('delete-account-wrapper');
-
-            if (window.isLoggedIn) {
-                logoutBtn.classList.remove('hidden');
-                deleteAccountBtn.classList.remove('hidden');
-            } else {
-                logoutBtn.classList.add('hidden');
-                deleteAccountBtn.classList.add('hidden');
-            }
-        }
-
-        window.checkCreditAndStart = () => {
-            if(!window.isLoggedIn) {
-                alert("Önce giriş yapmalısın güzelim.");
-                navTo('auth-screen');
-            } else {
-                alert("Fal Gönderme İşlemi (Demo)");
-            }
+        window.onload = () => {
+            setTimeout(() => { document.getElementById('splash-screen').style.opacity='0'; setTimeout(()=>{document.getElementById('splash-screen').style.display='none'; document.getElementById('home-screen').classList.add('active');},800); }, 2000);
         }
     </script>
 </body>

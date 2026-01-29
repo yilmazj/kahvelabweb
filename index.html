@@ -69,27 +69,45 @@
         .header-title { font-size: 20px; font-weight: 700; color: var(--text-main); }
         .icon-btn { background: none; border: none; font-size: 20px; color: var(--text-main); cursor: pointer; }
 
-        /* --- SPLASH SCREEN --- */
+        /* --- SPLASH SCREEN (DÜZELTİLDİ) --- */
         #splash-screen {
             position: absolute;
-            top: 0; left: 0; width: 100%; height: 100%;
-            background: linear-gradient(135deg, #4a050a 0%, #1a0102 100%);
-            z-index: 9999;
-            justify-content: center;
-            align-items: center;
-            transition: opacity 0.5s;
-        }
-        .splash-logo { width: 150px; height: 150px; border-radius: 30px; box-shadow: 0 0 30px rgba(212, 175, 55, 0.2); }
-
-        /* --- ANA SAYFA --- */
-        .hero-section {
-            height: 320px;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            /* Logonun kendi arkaplan rengiyle uyumlu koyu bir geçiş */
+            background: radial-gradient(circle, #750d15 0%, #1a0102 100%);
             display: flex;
             justify-content: center;
             align-items: center;
-            background: linear-gradient(180deg, #FFFFFF 0%, #FAFAFA 100%);
+            z-index: 9999;
+            transition: opacity 0.5s ease;
         }
-        
+
+        .splash-logo-container {
+            width: 180px;
+            height: 180px;
+            position: relative;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            animation: breathe 3s infinite ease-in-out;
+        }
+
+        .splash-logo-img {
+            width: 100%;
+            height: auto;
+            object-fit: contain;
+            /* Resmin kenarları keskin durmasın diye hafif gölge */
+            filter: drop-shadow(0 0 20px rgba(255, 215, 0, 0.2)); 
+        }
+
+        @keyframes breathe {
+            0% { transform: scale(1); filter: brightness(100%); }
+            50% { transform: scale(1.05); filter: brightness(110%); }
+            100% { transform: scale(1); filter: brightness(100%); }
+        }
         .main-fal-btn {
             width: 150px; height: 150px;
             border-radius: 50%;
@@ -208,11 +226,12 @@
 
     <div id="app">
 
-        <div id="splash-screen" class="screen active" style="z-index: 9999;">
-            <img src="https://i.ibb.co/LtbYhP0/kahvelab-logo.png" alt="Logo" class="splash-logo">
-            <h2 style="color:white; margin-top:20px; font-weight:300; letter-spacing:2px;">KAHVELAB</h2>
+        <div id="splash-screen" class="screen active">
+            <div class="splash-logo-container">
+                <img src="./logolab.png" alt="Kahvelab" class="splash-logo-img">
+            </div>
         </div>
-
+        
         <div id="auth-screen" class="screen">
             <div class="header" style="background:transparent;">
                 <div class="icon-btn" onclick="navTo('home-screen')"><i class="fa-solid fa-arrow-left"></i></div>

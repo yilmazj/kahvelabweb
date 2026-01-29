@@ -525,9 +525,9 @@
         import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, onAuthStateChanged, signOut, deleteUser } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
         import { getFirestore, doc, setDoc, getDoc, updateDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
-        // GÜNCELLENMİŞ FIREBASE CONFIG (YENİ API KEY İLE)
+        // FIREBASE İÇİN ESKİ ANAHTARI KULLANIYORUZ (Giriş Hatasını Çözmek İçin)
         const firebaseConfig = {
-          apiKey: "AIzaSyCjSBmLJsOOb-uG9SRPt2c8cA5cAu1sfdE",
+          apiKey: "AIzaSyDVV5cLOkjaJ3k-FUwqRE4LucN293RPBbM", 
           authDomain: "kahvelabweb.firebaseapp.com",
           projectId: "kahvelabweb",
           storageBucket: "kahvelabweb.firebasestorage.app",
@@ -539,7 +539,7 @@
         const auth = getAuth(app);
         const db = getFirestore(app);
 
-        // --- GEMINI API KEY (YENİ KEY İLE) ---
+        // GEMINI İÇİN YENİ ANAHTARI KULLANIYORUZ (Fal Hatasını Çözmek İçin)
         const GEMINI_API_KEY = "AIzaSyCjSBmLJsOOb-uG9SRPt2c8cA5cAu1sfdE"; 
 
         // --- GLOBAL VARIABLES ---

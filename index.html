@@ -525,7 +525,7 @@
         import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, onAuthStateChanged, signOut, deleteUser } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
         import { getFirestore, doc, setDoc, getDoc, updateDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
-        // FIREBASE İÇİN ESKİ ANAHTARI KULLANIYORUZ (Giriş Hatasını Çözmek İçin)
+        // FIREBASE CONFIG
         const firebaseConfig = {
           apiKey: "AIzaSyDVV5cLOkjaJ3k-FUwqRE4LucN293RPBbM", 
           authDomain: "kahvelabweb.firebaseapp.com",
@@ -539,7 +539,7 @@
         const auth = getAuth(app);
         const db = getFirestore(app);
 
-        // GEMINI İÇİN YENİ ANAHTARI KULLANIYORUZ (Fal Hatasını Çözmek İçin)
+        // GEMINI API KEY
         const GEMINI_API_KEY = "AIzaSyCjSBmLJsOOb-uG9SRPt2c8cA5cAu1sfdE"; 
 
         // --- GLOBAL VARIABLES ---
@@ -624,29 +624,36 @@
         // --- AUTH STATE LISTENER & ONBOARDING CHECK ---
         onAuthStateChanged(auth, async (user) => {
             if (user) {
-                // Kullanıcı var, veritabanından profilini çekelim
-                const docRef = doc(db, "users", user.uid);
-                const docSnap = await getDoc(docRef);
+                // KULLANICI GİRİŞ YAPTI
+                try {
+                    const docRef = doc(db, "users", user.uid);
+                    const docSnap = await getDoc(docRef);
 
-                document.getElementById('lock-overlay').style.display = 'none';
-                document.getElementById('summary-content').style.filter = 'none';
-                document.getElementById('guest-actions').classList.add('hidden');
-                document.getElementById('premium-area').classList.remove('hidden');
-                document.getElementById('btn-logout-wrapper').classList.remove('hidden');
-                document.getElementById('btn-edit-profile').classList.remove('hidden');
+                    // UI DÜZENLEMELERİ (Her durumda yapılması gerekenler)
+                    document.getElementById('lock-overlay').style.display = 'none';
+                    document.getElementById('summary-content').style.filter = 'none';
+                    document.getElementById('guest-actions').classList.add('hidden');
+                    document.getElementById('premium-area').classList.remove('hidden');
+                    document.getElementById('btn-logout-wrapper').classList.remove('hidden');
+                    document.getElementById('btn-edit-profile').classList.remove('hidden');
 
-                if (docSnap.exists()) {
-                    // Profil var -> Home'a git
-                    currentUserProfile = docSnap.data();
-                    document.getElementById('profile-name').innerText = currentUserProfile.name || "Kullanıcı";
-                    window.navTo('home-screen');
-                } else {
-                    // Profil yok -> Onboarding'e git
+                    if (docSnap.exists()) {
+                        // Profil var -> Home'a git
+                        currentUserProfile = docSnap.data();
+                        document.getElementById('profile-name').innerText = currentUserProfile.name || "Kullanıcı";
+                        window.navTo('home-screen');
+                    } else {
+                        // Profil yok -> Onboarding'e git (Yeni kayıt durumu)
+                        window.navTo('onboarding-screen');
+                    }
+                } catch (error) {
+                    console.log("Profil çekme hatası veya izin sorunu, onboarding'e yönlendiriliyor:", error);
+                    // Hata olsa bile (örn: veritabanı kuralı) kullanıcıyı onboarding'e at ki takılmasın
                     window.navTo('onboarding-screen');
                 }
 
             } else {
-                // Çıkış yapılmış
+                // ÇIKIŞ YAPILDI
                 currentUserProfile = null;
                 document.getElementById('profile-name').innerText = "Misafir Kullanıcı";
                 document.getElementById('guest-actions').classList.remove('hidden');

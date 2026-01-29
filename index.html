@@ -2,478 +2,554 @@
 <html lang="tr">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Mistik Fal - AI Dostun</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>KahveLab - Yeni Nesil Fal</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
     <style>
         :root {
-            --bg-color: #1a1a2e;
-            --accent-color: #e94560;
-            --text-color: #f1f1f1;
-            --gold: #ffd700;
-            --secondary: #16213e;
+            --primary: #8B0000;
+            --primary-light: #D92546;
+            --gold: #FFD700;
+            --bg-body: #F2F2F7;
+            --bg-card: #FFFFFF;
+            --text-main: #1C1C1E;
+            --text-sub: #8E8E93;
+            --divider: #E5E5EA;
+            --nav-height: 80px;
         }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; -webkit-tap-highlight-color: transparent; }
 
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: var(--bg-color);
-            color: var(--text-color);
-            margin: 0;
+            background-color: #000;
             display: flex;
             justify-content: center;
-            align-items: center;
-            min-height: 100vh;
-            overflow-x: hidden;
-        }
-
-        .app-container {
-            width: 100%;
-            max-width: 400px;
-            background-color: var(--secondary);
             height: 100vh;
-            position: relative;
-            overflow-y: auto;
-            box-shadow: 0 0 20px rgba(0,0,0,0.5);
+            overflow: hidden;
+            user-select: none; /* Metin seçimini engelle, uygulama hissi ver */
         }
 
-        /* Ekran Yönetimi */
+        #app {
+            width: 100%;
+            max-width: 414px;
+            height: 100%;
+            background-color: #FAFAFA;
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* --- UI GENEL --- */
         .screen {
             display: none;
-            padding: 20px;
-            height: 100%;
-            box-sizing: border-box;
             flex-direction: column;
-            align-items: center;
-            text-align: center;
-        }
-
-        .screen.active {
-            display: flex;
-            animation: fadeIn 0.5s ease;
-        }
-
-        /* Login Ekranı */
-        input, select {
+            height: 100%;
             width: 100%;
-            padding: 15px;
-            margin: 10px 0;
-            border-radius: 25px;
-            border: none;
-            background: rgba(255,255,255,0.1);
-            color: white;
-            font-size: 16px;
+            overflow-y: auto;
+            padding-bottom: var(--nav-height);
+            animation: fadeIn 0.4s ease;
+            background: #FAFAFA;
         }
-
-        /* Butonlar */
-        .btn {
-            background: linear-gradient(45deg, #e94560, #d63447);
-            color: white;
-            border: none;
-            padding: 15px 30px;
-            border-radius: 25px;
-            font-size: 18px;
-            cursor: pointer;
-            margin-top: 20px;
-            width: 100%;
-            font-weight: bold;
-            transition: transform 0.2s;
-        }
-        .btn:active { transform: scale(0.95); }
-        .btn-gold { background: linear-gradient(45deg, #ffd700, #b8860b); color: #000; }
-
-        /* Dashboard */
-        .credit-badge {
-            background: rgba(255, 215, 0, 0.2);
-            color: var(--gold);
-            padding: 10px 20px;
-            border-radius: 20px;
-            margin-bottom: 20px;
-            border: 1px solid var(--gold);
-        }
-
-        /* Ritüel Butonu */
-        #ritual-btn {
-            width: 150px;
-            height: 150px;
-            border-radius: 50%;
-            background: radial-gradient(circle, #e94560 0%, #1a1a2e 70%);
-            border: 4px solid var(--gold);
-            color: white;
-            font-size: 14px;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            user-select: none;
-            box-shadow: 0 0 30px rgba(233, 69, 96, 0.5);
-            margin-top: 50px;
-            position: relative;
-        }
-
-        #ritual-btn.holding {
-            animation: pulse 1s infinite;
-        }
-
-        .progress-ring {
-            position: absolute;
-            top: -10px; left: -10px; right: -10px; bottom: -10px;
-            border-radius: 50%;
-            border: 4px solid transparent;
-            border-top-color: var(--gold);
-            animation: spin 1s linear infinite;
-            display: none;
-        }
-
-        /* Sonuç Ekranı */
-        .result-box {
-            background: rgba(0,0,0,0.3);
-            border-radius: 15px;
-            padding: 15px;
-            margin-bottom: 15px;
-            text-align: left;
-            border-left: 3px solid var(--accent-color);
-            opacity: 0; /* JS ile açılacak */
-            transform: translateY(20px);
-            transition: all 0.5s ease;
-        }
-        .result-box.show { opacity: 1; transform: translateY(0); }
-        .result-title { color: var(--gold); font-size: 14px; text-transform: uppercase; margin-bottom: 5px; }
-
-        /* Premium Upsell */
-        .premium-card {
-            background: linear-gradient(135deg, #2a0845 0%, #6441A5 100%);
-            padding: 20px;
-            border-radius: 15px;
-            margin-top: 20px;
-            border: 1px solid var(--gold);
-        }
+        .screen.active { display: flex; }
+        .screen.dark-mode { background: #1a1a2e; color: white; }
 
         @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-        @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.1); } 100% { transform: scale(1); } }
+
+        .header {
+            padding: 20px 24px;
+            padding-top: 50px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: rgba(255,255,255,0.9);
+            backdrop-filter: blur(10px);
+            position: sticky;
+            top: 0;
+            z-index: 20;
+        }
+        .header-title { font-size: 20px; font-weight: 700; color: var(--text-main); }
+        .icon-btn { background: none; border: none; font-size: 20px; color: var(--text-main); cursor: pointer; }
+
+        /* --- SPLASH SCREEN --- */
+        #splash-screen {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            background: radial-gradient(circle at center, #6a040f 0%, #2a0203 100%);
+            z-index: 9999;
+            display: flex; justify-content: center; align-items: center;
+            transition: opacity 0.8s ease-out;
+        }
+        .splash-logo-img { width: 160px; height: auto; filter: drop-shadow(0 0 25px rgba(212, 175, 55, 0.3)); animation: breathe 3s infinite ease-in-out; }
+        @keyframes breathe { 0% { transform: scale(1); } 50% { transform: scale(1.03); } 100% { transform: scale(1); } }
+
+        /* --- ANA SAYFA --- */
+        .hero-section {
+            height: 300px; display: flex; justify-content: center; align-items: center;
+            background: linear-gradient(180deg, #FFFFFF 0%, #FAFAFA 100%);
+        }
+        .main-fal-btn {
+            width: 160px; height: 160px; border-radius: 50%;
+            background: linear-gradient(135deg, var(--primary-light), var(--primary));
+            color: white; border: none; font-size: 18px; font-weight: 700;
+            box-shadow: 0 10px 40px rgba(139, 0, 0, 0.4); z-index: 2; cursor: pointer; position: relative;
+        }
+        .pulse-ring {
+            position: absolute; border-radius: 50%; border: 2px solid var(--primary-light);
+            width: 100%; height: 100%; top: 0; left: 0; animation: pulse 2s infinite; opacity: 0;
+        }
+        @keyframes pulse { 0% { transform: scale(1); opacity: 0.6; } 100% { transform: scale(1.5); opacity: 0; } }
+
+        /* Kredi Rozeti */
+        .credit-badge {
+            position: absolute; top: 110px; right: 20px;
+            background: white; padding: 8px 15px; border-radius: 20px;
+            font-size: 12px; font-weight: 600; color: var(--primary);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1); border: 1px solid #eee;
+        }
+
+        /* --- RİTÜEL EKRANI (AŞAMA 4) --- */
+        #ritual-screen {
+            background: radial-gradient(circle, #2a0845 0%, #1a1a2e 100%);
+            justify-content: center; align-items: center; text-align: center; color: white;
+            padding-bottom: 0;
+        }
+        .ritual-circle {
+            width: 180px; height: 180px; border-radius: 50%;
+            border: 4px solid rgba(255,255,255,0.1);
+            position: relative; display: flex; justify-content: center; align-items: center;
+            margin: 40px 0; user-select: none;
+            transition: all 0.2s; cursor: pointer;
+        }
+        .ritual-circle.active { border-color: var(--gold); box-shadow: 0 0 50px rgba(255, 215, 0, 0.3); transform: scale(0.95); }
+        .ritual-progress {
+            position: absolute; top: -4px; left: -4px; right: -4px; bottom: -4px;
+            border-radius: 50%; border: 4px solid transparent; border-top-color: var(--gold);
+            display: none; animation: spin 1s linear infinite;
+        }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 
-        .hidden { display: none !important; }
+        /* --- SONUÇ EKRANI --- */
+        #result-screen { padding: 20px; background: #fff; }
+        .result-card {
+            background: #fff; border-radius: 16px; padding: 20px; margin-bottom: 20px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.05); border: 1px solid #f0f0f0;
+            opacity: 0; transform: translateY(20px); transition: all 0.5s ease;
+        }
+        .result-card.show { opacity: 1; transform: translateY(0); }
+        .result-header { color: var(--primary); font-size: 14px; font-weight: 700; text-transform: uppercase; margin-bottom: 10px; border-bottom: 1px solid #eee; padding-bottom: 5px;}
+        .typewriter-text { font-size: 15px; line-height: 1.6; color: #333; }
+
+        /* --- AUTH & FORM --- */
+        .auth-input { width: 100%; padding: 15px; margin-bottom: 15px; border-radius: 12px; border: 1px solid #eee; background: #FAFAFA; }
+        .submit-btn {
+            width: 100%; padding: 16px; border-radius: 16px; background: var(--primary); color: white;
+            border: none; font-weight: 700; font-size: 16px; cursor: pointer; margin-top: 10px;
+        }
+
+        /* --- PREMIUM CARD --- */
+        .premium-promo-card {
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            color: white; border-radius: 16px; padding: 20px; margin-top: 20px;
+            position: relative; overflow: hidden; border: 1px solid var(--gold);
+        }
+        .premium-promo-card::before {
+            content: ''; position: absolute; top: -50px; right: -50px; width: 100px; height: 100px;
+            background: var(--gold); opacity: 0.2; border-radius: 50%; filter: blur(20px);
+        }
+
+        /* --- KAMERA --- */
+        .cam-view { flex: 1; background: url('https://images.unsplash.com/photo-1514432324607-a09d9b4aefdd?q=80') center/cover; position: relative; }
+        .snap-btn { width: 70px; height: 70px; border-radius: 50%; border: 4px solid white; display: flex; justify-content: center; align-items: center; }
+        .snap-inner { width: 55px; height: 55px; background: var(--primary); border-radius: 50%; }
+
+        /* --- ALT BAR --- */
+        .bottom-nav {
+            position: absolute; bottom: 0; width: 100%; height: var(--nav-height);
+            background: white; display: flex; justify-content: space-around;
+            align-items: center; border-top: 1px solid var(--divider); z-index: 100; padding-bottom: 15px;
+        }
+        .nav-item { display: flex; flex-direction: column; align-items: center; color: #C7C7CC; font-size: 11px; gap: 5px; cursor: pointer; width: 60px; }
+        .nav-item.active { color: var(--primary); }
     </style>
 </head>
 <body>
 
-<div class="app-container">
+    <div id="app">
 
-    <div id="login-screen" class="screen active">
-        <h2>Kimsin Sen Yolcu?</h2>
-        <p style="opacity: 0.7;">Enerjini tanımamız için bilgilerini gir.</p>
-        <input type="text" id="username" placeholder="Adın nedir?">
-        <select id="status">
-            <option value="">İlişki Durumun</option>
-            <option value="single">Sap ve Gururlu</option>
-            <option value="complicated">Karmaşık</option>
-            <option value="taken">Mutlu Mesut</option>
-            <option value="sad">Kalbi Kırık</option>
-        </select>
-        <button class="btn" onclick="app.login()">Giriş Yap</button>
-    </div>
-
-    <div id="dashboard" class="screen">
-        <div style="width: 100%; display: flex; justify-content: space-between; align-items: center;">
-            <h3>Ana Sayfa</h3>
-            <button onclick="app.goToAccount()" style="background:none; border:none; color:white;">👤 Hesabım</button>
-        </div>
-        
-        <div class="credit-badge">
-            Kalan Fal Hakkı: <span id="credit-display">3</span>
+        <div id="splash-screen" class="screen active">
+            <img src="./logolab.png" alt="Kahvelab" class="splash-logo-img">
         </div>
 
-        <div style="background: rgba(255,255,255,0.05); padding: 20px; border-radius: 20px; margin-top: 20px;">
-            <p>Kahveni içtin mi? Fincanın hazırsa niyetini et ve fotoğrafı gönder.</p>
-            <button class="btn" onclick="app.startUploadProcess()">☕ Fal Gönder</button>
-        </div>
-
-        <div class="premium-card" style="margin-top: 40px; transform: scale(0.9);">
-            <h4>🚀 Premium'a Geç</h4>
-            <p style="font-size: 12px;">Detaylı ilişki analizi ve soru sorma hakkı kazan.</p>
-            <button class="btn btn-gold" style="font-size: 14px; padding: 10px;" onclick="app.goToAccount()">İncele</button>
-        </div>
-    </div>
-
-    <div id="ritual-screen" class="screen">
-        <h3>Enerji Aktarımı</h3>
-        <p>Fotoğraf yüklendi. Şimdi parmağını aşağıdaki butona basılı tut ve niyetine odaklan.</p>
-        
-        <div id="ritual-btn" 
-             onmousedown="ritual.start()" 
-             onmouseup="ritual.end()" 
-             onmouseleave="ritual.end()"
-             ontouchstart="ritual.start()" 
-             ontouchend="ritual.end()">
-            <div class="progress-ring" id="progress-ring"></div>
-            <span id="ritual-text">BASILI TUT</span>
-        </div>
-        <p id="ritual-status" style="margin-top: 20px; opacity: 0.7; min-height: 20px;">...</p>
-    </div>
-
-    <div id="result-screen" class="screen" style="justify-content: flex-start; padding-top: 40px;">
-        <h2 style="color: var(--gold);">✨ Falın Çıktı ✨</h2>
-        
-        <div id="result-container" style="width: 100%; padding-bottom: 50px;">
+        <div id="auth-screen" class="screen">
+            <div class="header" style="background:transparent;">
+                <div class="icon-btn" onclick="navTo('home-screen')"><i class="fa-solid fa-arrow-left"></i></div>
+                <div class="header-title">Giriş Yap</div>
+                <div style="width:20px;"></div>
+            </div>
+            <div style="padding: 24px;">
+                <h2 style="margin-bottom: 20px;">Hoş Geldin!</h2>
+                <input type="email" id="login-email" class="auth-input" placeholder="E-Posta Adresin">
+                <input type="password" id="login-password" class="auth-input" placeholder="Şifren">
+                <button class="submit-btn" onclick="loginUser()">Giriş Yap</button>
+                <div style="text-align:center; margin-top:15px; font-size:13px; color:#666;">
+                    Hesabın yok mu? <span onclick="toggleAuthMode()" style="color:var(--primary); font-weight:600;">Kayıt Ol</span>
+                </div>
+            </div>
             </div>
 
-        <button class="btn" onclick="app.showScreen('dashboard')">Ana Sayfaya Dön</button>
-        
-        <div class="premium-card">
-            <h4>🤔 Kafanda Soru mu Var?</h4>
-            <p>Eski sevgilin dönecek mi? Terfi var mı? Premium al, AI falcına <b>özel soru sor!</b></p>
-            <button class="btn btn-gold">Premium'a Geç</button>
+        <div id="home-screen" class="screen">
+            <div class="header">
+                <div class="icon-btn"><i class="fa-solid fa-bars"></i></div>
+                <div class="header-title">Ana Sayfa</div>
+                <div class="icon-btn" onclick="navTo('profile-screen')"><i class="fa-solid fa-user"></i></div>
+            </div>
+
+            <div class="credit-badge" id="home-credit-badge">
+                <i class="fa-solid fa-bolt" style="color:var(--gold)"></i> <span id="credit-count">3</span> Hak
+            </div>
+
+            <div class="hero-section">
+                <button class="main-fal-btn" onclick="checkCreditAndStart()">
+                    <div class="pulse-ring"></div>
+                    FAL<br>GÖNDER
+                </button>
+            </div>
+
+            <div style="padding: 24px;">
+                <h3 style="font-size:16px; margin-bottom:15px;">Günlük Burç Enerjin</h3>
+                <div style="display:flex; gap:10px; overflow-x:auto; padding-bottom:10px;">
+                    <div style="min-width:120px; height:100px; background:white; border-radius:12px; padding:15px; border:1px solid #eee;">
+                        <i class="fa-solid fa-heart" style="color:var(--primary)"></i>
+                        <div style="margin-top:10px; font-size:12px; font-weight:600;">Aşk: Yüksek</div>
+                    </div>
+                    <div style="min-width:120px; height:100px; background:white; border-radius:12px; padding:15px; border:1px solid #eee;">
+                        <i class="fa-solid fa-briefcase" style="color:#4CAF50"></i>
+                        <div style="margin-top:10px; font-size:12px; font-weight:600;">İş: Fırsat Var</div>
+                    </div>
+                </div>
+            </div>
         </div>
-    </div>
 
-    <div id="account-screen" class="screen">
-        <h2>Hesabım</h2>
-        <div class="credit-badge" style="width: 80%;">
-            Üyelik: <span id="membership-type">Standart</span>
+        <div id="camera-screen" class="screen" style="background:black;">
+            <div style="position:absolute; top:40px; left:20px; z-index:10; color:white;" onclick="navTo('home-screen')">
+                <i class="fa-solid fa-xmark" style="font-size:24px;"></i>
+            </div>
+            <div class="cam-view">
+                <div style="position:absolute; bottom:20px; width:100%; text-align:center; color:white; font-size:12px;">Fincanı ortala</div>
+            </div>
+            <div style="height:120px; background:rgba(0,0,0,0.8); display:flex; justify-content:center; align-items:center;">
+                <div class="snap-btn" onclick="takePhoto()">
+                    <div class="snap-inner"></div>
+                </div>
+            </div>
         </div>
 
-        <div class="premium-card" style="width: 100%; text-align: left;">
-            <h3 style="text-align: center; color: #000;">👑 Premium Avantajları</h3>
-            <ul style="font-size: 14px; line-height: 1.6;">
-                <li>✅ <b>Soru Sor:</b> "Ne zaman evleneceğim?" diye direkt sor.</li>
-                <li>✅ <b>Sinastri:</b> Fincan + Burç uyumuna bak.</li>
-                <li>✅ <b>Beklemek Yok:</b> Öncelikli analiz.</li>
-            </ul>
-            <button class="btn btn-gold" onclick="alert('Ödeme sistemine yönlendiriliyorsun (Demo)')">Premium Ol (₺99/ay)</button>
-        </div>
-
-        <button class="btn" style="background: #333; margin-top: 20px;" onclick="app.showScreen('dashboard')">Geri Dön</button>
-        <button class="btn" style="background: transparent; color: #666; font-size: 12px;" onclick="app.resetData()">Verileri Sıfırla (Demo)</button>
-    </div>
-
-</div>
-
-<script>
-/**
- * SENİN VERDİĞİN PROMPTA UYGUN MOCK JSON CEVABI
- * Gemini API entegrasyonu yapılana kadar bu veri dönecek.
- */
-const MOCK_GEMINI_RESPONSE = {
-    "genel_yorum": "Ooo güzelim hoş geldin! Fincanına baktım da içi bayağı kabarık, senin içine attığın şeyler var sanki. Ama yüreğin o kadar temiz ki, o karanlıklar aydınlığa çıkmak üzere. Hanenin ortasında kocaman bir ferahlık görüyorum, sanki bir yük kalkacak omuzlarından.",
-    "ask_hayati": "Bak şimdi, fincanın kulp tarafında bir 'E' harfi mi desem, 'M' mi desem bi harf var. Geçmişten biri bu, aklı hala sende kalmış. Ama sen önüne bakıyorsun kuzum. Yakın zamanda kalbini pır pır ettirecek bir heyecan var, ama hemen kapılma, biraz ağırdan sat kendini.",
-    "kariyer_para": "Eline parça parça paralar geçecek bu ara. Sanki beklediğin bir haber var iş veya okulla ilgili, o haberin eli kulağında. Ama harcamalarına dikkat et, su gibi akıp gitmesin paralar.",
-    "motto": "Karanlık gecenin sonu her zaman aydınlıktır, sen parlamaya devam et."
-};
-
-/**
- * UYGULAMA MANTIĞI
- */
-const app = {
-    user: {
-        name: '',
-        status: '',
-        credits: 3,
-        lastLoginDate: '',
-        isPremium: false
-    },
-
-    init: function() {
-        // LocalStorage'dan veri çek
-        const savedUser = localStorage.getItem('falUser');
-        if (savedUser) {
-            this.user = JSON.parse(savedUser);
-            this.checkDailyCredits();
-            this.showScreen('dashboard');
-        }
-    },
-
-    login: function() {
-        const name = document.getElementById('username').value;
-        const status = document.getElementById('status').value;
-        
-        if(!name || !status) { alert("Adını ve durumunu söylemezsen enerjini tutamam!"); return; }
-
-        this.user.name = name;
-        this.user.status = status;
-        this.checkDailyCredits(); // İlk girişte kredi kontrolü
-        this.saveUser();
-        this.showScreen('dashboard');
-    },
-
-    // AŞAMA 3: Kredi Sistemi & Tarih Kontrolü
-    checkDailyCredits: function() {
-        const today = new Date().toDateString();
-        
-        // Eğer son giriş tarihi bugün değilse, kredileri yenile
-        if (this.user.lastLoginDate !== today) {
-            this.user.credits = 3;
-            this.user.lastLoginDate = today;
-            this.saveUser();
-            // Belki burada "Günaydın, kredilerin yenilendi!" modalı açılabilir.
-        }
-        this.updateUI();
-    },
-
-    startUploadProcess: function() {
-        // Kredi Kontrolü
-        if (this.user.credits <= 0) {
-            // AŞAMA 3: Kredi bitti mantığı
-            alert("Hoppala! Bugünkü nasibini aldın güzelim. Ya yarını bekle, ya da reklam izle (Yakında).");
-            // Buraya Premium Upsell modalı açılır normalde
-            return;
-        }
-
-        // Kredi düş
-        this.user.credits--;
-        this.saveUser();
-        this.updateUI();
-
-        // Fotoğraf seçilmiş gibi yapıp Ritüel ekranına geç
-        // (Aşama 4: Oyalama Sanatı)
-        setTimeout(() => {
-            this.showScreen('ritual-screen');
-        }, 500);
-    },
-
-    showResult: function() {
-        this.showScreen('result-screen');
-        const container = document.getElementById('result-container');
-        container.innerHTML = ''; // Temizle
-
-        // JSON verisini sırayla ve daktilo efektiyle basma
-        const sections = [
-            { title: "Genel Enerjin", text: MOCK_GEMINI_RESPONSE.genel_yorum },
-            { title: "Aşk Durumun", text: MOCK_GEMINI_RESPONSE.ask_hayati },
-            { title: "Para & Kariyer", text: MOCK_GEMINI_RESPONSE.kariyer_para },
-            { title: "Sana Özel Mesajım", text: MOCK_GEMINI_RESPONSE.motto }
-        ];
-
-        let delay = 0;
-        sections.forEach(sec => {
-            // Her bölüm için kutu oluştur
-            const box = document.createElement('div');
-            box.className = 'result-box';
-            box.innerHTML = `<div class="result-title">${sec.title}</div><div class="typewriter-text"></div>`;
-            container.appendChild(box);
-
-            // Kutuyu görünür yap ve yazıyı yazdır
-            setTimeout(() => {
-                box.classList.add('show');
-                this.typeWriter(box.querySelector('.typewriter-text'), sec.text, 0);
-            }, delay);
-
-            // Bir sonraki kutunun başlama süresini hesapla (okuma hızı simülasyonu)
-            delay += (sec.text.length * 20) + 1000; 
-        });
-    },
-
-    // AŞAMA 4: Daktilo Efekti
-    typeWriter: function(element, text, index) {
-        if (index < text.length) {
-            element.innerHTML += text.charAt(index);
-            setTimeout(() => {
-                this.typeWriter(element, text, index + 1);
-            }, 30); // Yazma hızı
-        }
-    },
-
-    saveUser: function() {
-        localStorage.setItem('falUser', JSON.stringify(this.user));
-    },
-
-    updateUI: function() {
-        document.getElementById('credit-display').innerText = this.user.credits;
-        document.getElementById('membership-type').innerText = this.user.isPremium ? "Premium Üye 🌟" : "Standart Üye";
-    },
-
-    showScreen: function(screenId) {
-        document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
-        document.getElementById(screenId).classList.add('active');
-        this.updateUI();
-    },
-    
-    goToAccount: function() {
-        this.showScreen('account-screen');
-    },
-
-    resetData: function() {
-        localStorage.removeItem('falUser');
-        location.reload();
-    }
-};
-
-/**
- * AŞAMA 4: RİTÜEL (BASILI TUTMA OYUNU)
- */
-const ritual = {
-    timer: null,
-    progress: 0,
-    btn: document.getElementById('ritual-btn'),
-    ring: document.getElementById('progress-ring'),
-    status: document.getElementById('ritual-status'),
-    isComplete: false,
-
-    start: function() {
-        if (this.isComplete) return;
-        
-        this.btn.classList.add('holding');
-        this.ring.style.display = 'block';
-        this.status.innerText = "Enerjin fincana akıyor... Bırakma...";
-        
-        // Haptic Feedback (Mobil cihazlarda titreşim)
-        if (navigator.vibrate) navigator.vibrate(50);
-
-        this.timer = setInterval(() => {
-            this.progress += 2; // Dolma hızı
+        <div id="ritual-screen" class="screen">
+            <h2 style="color:var(--gold); margin-bottom:10px;">Enerji Aktarımı</h2>
+            <p style="opacity:0.7; font-size:14px; max-width:80%;">Niyetini tut ve aşağıdaki mühre parmağını basılı tut.</p>
             
-            // Renk ve opaklık değişimi (Görsel Efekt)
-            this.btn.style.boxShadow = `0 0 ${30 + this.progress}px rgba(233, 69, 96, ${this.progress/100})`;
+            <div class="ritual-circle" id="ritual-btn" 
+                 onmousedown="startRitual()" onmouseup="endRitual()" 
+                 ontouchstart="startRitual()" ontouchend="endRitual()">
+                <div class="ritual-progress" id="ritual-ring"></div>
+                <i class="fa-solid fa-fingerprint" style="font-size:40px; color:rgba(255,255,255,0.5);"></i>
+            </div>
+            
+            <p id="ritual-status" style="font-size:12px; color:var(--primary-light); height:20px;">...</p>
+        </div>
 
-            if (this.progress >= 100) {
-                this.complete();
+        <div id="result-screen" class="screen">
+            <div class="header">
+                <div class="icon-btn" onclick="navTo('home-screen')"><i class="fa-solid fa-xmark"></i></div>
+                <div class="header-title">Falın Hazır!</div>
+                <div style="width:20px;"></div>
+            </div>
+            
+            <div id="result-container" style="padding: 24px; padding-bottom: 100px;">
+                </div>
+            
+            <div style="padding: 0 24px;">
+                <button class="submit-btn" style="background: #333;" onclick="navTo('profile-screen')">
+                    <i class="fa-solid fa-circle-question"></i> Bir Soru Sor (Premium)
+                </button>
+            </div>
+        </div>
+
+        <div id="profile-screen" class="screen">
+            <div class="header">
+                <div class="header-title">Hesabım</div>
+            </div>
+
+            <div style="padding: 24px; text-align:center;">
+                <img src="https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=200" style="width:100px; height:100px; border-radius:50%; border:3px solid var(--primary);">
+                <h2 id="profile-name" style="margin-top:15px;">Misafir</h2>
+                <p id="profile-credits" style="color:var(--primary); font-weight:700;">3 Kredi</p>
+
+                <div class="premium-promo-card">
+                    <div style="display:flex; align-items:center; gap:10px; margin-bottom:10px;">
+                        <i class="fa-solid fa-crown" style="color:var(--gold);"></i>
+                        <h3 style="font-size:16px; margin:0;">Premium'a Geç</h3>
+                    </div>
+                    <ul style="text-align:left; font-size:13px; line-height:2; list-style:none;">
+                        <li>✨ <b>Soru Sorma Hakkı:</b> "Eski sevgilim dönecek mi?" diye sor.</li>
+                        <li>🚀 <b>Öncelikli Analiz:</b> Sıra bekleme.</li>
+                        <li>💞 <b>Sinastri:</b> Fincan + Burç uyumu.</li>
+                    </ul>
+                    <button class="submit-btn" style="background:white; color:black; margin-top:15px;">
+                        Detayları Gör
+                    </button>
+                </div>
+
+                <button class="submit-btn" style="background:#eee; color:#333; margin-top:20px;" onclick="logoutUser()">Çıkış Yap</button>
+            </div>
+        </div>
+
+        <div class="bottom-nav">
+            <div class="nav-item active" onclick="navTo('home-screen', this)"><i class="fa-solid fa-house"></i><span>Ana Sayfa</span></div>
+            <div class="nav-item" onclick="navTo('home-screen', this)"><i class="fa-solid fa-layer-group"></i><span>Fallar</span></div>
+            <div class="nav-item" onclick="navTo('profile-screen', this)"><i class="fa-solid fa-user"></i><span>Hesabım</span></div>
+        </div>
+
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+        import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut, createUserWithEmailAndPassword, updateProfile } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+        import { getFirestore, doc, setDoc, getDoc, updateDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyDVV5cLOkjaJ3k-FUwqRE4LucN293RPBbM",
+            authDomain: "kahvelabweb.firebaseapp.com",
+            projectId: "kahvelabweb",
+            storageBucket: "kahvelabweb.firebasestorage.app",
+            messagingSenderId: "754884541831",
+            appId: "1:754884541831:web:4a4cf4046a31b269ea2722"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+
+        let currentUser = null;
+        let userCredits = 3;
+
+        // AŞAMA 3: Kredi Kontrolü & Tarih
+        async function checkDailyCredits(user) {
+            const userRef = doc(db, "users", user.uid);
+            const docSnap = await getDoc(userRef);
+            
+            if (docSnap.exists()) {
+                const data = docSnap.data();
+                const today = new Date().toDateString(); // "Thu Jan 29 2026"
+                
+                // Eğer son güncelleme bugün değilse kredileri sıfırla
+                if (data.lastCreditUpdate !== today) {
+                    await updateDoc(userRef, {
+                        credits: 3,
+                        lastCreditUpdate: today
+                    });
+                    userCredits = 3;
+                } else {
+                    userCredits = data.credits;
+                }
+                updateCreditUI();
             }
-        }, 50);
-    },
+        }
 
-    end: function() {
-        if (this.isComplete) return;
+        // --- GLOBAL JS ---
+        window.loginUser = async () => {
+            const email = document.getElementById('login-email').value;
+            const password = document.getElementById('login-password').value;
+            try {
+                await signInWithEmailAndPassword(auth, email, password);
+                window.navTo('home-screen');
+            } catch(e) { alert("Giriş başarısız: " + e.message); }
+        };
 
-        clearInterval(this.timer);
-        this.btn.classList.remove('holding');
-        this.ring.style.display = 'none';
+        window.logoutUser = async () => {
+            await signOut(auth);
+            window.navTo('auth-screen');
+        };
+
+        // Kredi Kontrolü ve Başlangıç
+        window.checkCreditAndStart = async () => {
+            if (!auth.currentUser) {
+                alert("Fal baktırmak için giriş yapmalısın!");
+                window.navTo('auth-screen');
+                return;
+            }
+
+            if (userCredits > 0) {
+                window.navTo('camera-screen');
+            } else {
+                alert("Hoppala! Bugünkü nasibini aldın. Yarın gel ya da Premium'a geç!");
+            }
+        };
+
+        // Fotoğraf Çekildikten Sonra -> Ritüel Ekranına
+        window.takePhoto = () => {
+            // Gerçek app'te burası fotoğraf verisini alır.
+            // Şimdi kullanıcıyı oyalama ekranına (Ritüel) atıyoruz.
+            window.navTo('ritual-screen');
+        };
+
+        // Kredi Düşme İşlemi (Fal Gönderilince)
+        window.deductCredit = async () => {
+            if(currentUser) {
+                userCredits--;
+                const userRef = doc(db, "users", currentUser.uid);
+                await updateDoc(userRef, { credits: userCredits });
+                updateCreditUI();
+            }
+        };
+
+        function updateCreditUI() {
+            document.getElementById('credit-count').innerText = userCredits;
+            document.getElementById('profile-credits').innerText = userCredits + " Kredi";
+        }
+
+        onAuthStateChanged(auth, (user) => {
+            currentUser = user;
+            if (user) {
+                document.getElementById('profile-name').innerText = user.displayName || user.email;
+                checkDailyCredits(user);
+            } else {
+                // Giriş yoksa
+            }
+        });
+    </script>
+
+    <script>
+        // Splash Screen Timer
+        window.onload = () => {
+            setTimeout(() => {
+                document.getElementById('splash-screen').style.opacity = '0';
+                setTimeout(() => { 
+                    document.getElementById('splash-screen').style.display='none';
+                    document.getElementById('home-screen').classList.add('active'); 
+                }, 800);
+            }, 2500);
+        };
+
+        function navTo(screenId, navEl) {
+            document.querySelectorAll('.screen').forEach(s => {
+                if(s.id !== 'splash-screen') s.classList.remove('active');
+            });
+            document.getElementById(screenId).classList.add('active');
+            
+            if(navEl) {
+                document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+                navEl.classList.add('active');
+            }
+        }
+
+        // --- AŞAMA 4: RİTÜEL (BASILI TUTMA) ---
+        let ritualTimer;
+        let ritualProgress = 0;
+        const ritualBtn = document.getElementById('ritual-btn');
+        const ritualRing = document.getElementById('ritual-ring');
+        const ritualStatus = document.getElementById('ritual-status');
+
+        window.startRitual = function() {
+            if(window.ritualComplete) return;
+            ritualBtn.classList.add('active');
+            ritualRing.style.display = 'block';
+            ritualStatus.innerText = "Enerji aktarılıyor... Bırakma...";
+            
+            // Haptic (Titreşim)
+            if(navigator.vibrate) navigator.vibrate(50);
+
+            ritualTimer = setInterval(() => {
+                ritualProgress += 2;
+                if(ritualProgress >= 100) {
+                    completeRitual();
+                }
+            }, 60); // Dolma Hızı
+        };
+
+        window.endRitual = function() {
+            if(window.ritualComplete) return;
+            clearInterval(ritualTimer);
+            ritualBtn.classList.remove('active');
+            ritualRing.style.display = 'none';
+            ritualProgress = 0;
+            ritualStatus.innerText = "Enerji koptu! Tekrar dene.";
+        };
+
+        function completeRitual() {
+            clearInterval(ritualTimer);
+            window.ritualComplete = true;
+            ritualStatus.innerText = "Enerji Alındı! Yorumlanıyor...";
+            ritualBtn.style.borderColor = "#FFD700";
+            ritualBtn.innerHTML = "<i class='fa-solid fa-check' style='font-size:50px; color:#FFD700'></i>";
+            
+            if(navigator.vibrate) navigator.vibrate([100, 50, 100]);
+
+            // Krediyi Düş
+            if(window.deductCredit) window.deductCredit();
+
+            // Sonuca Git
+            setTimeout(() => {
+                navTo('result-screen');
+                generateFalResult(); // Yorumu Başlat
+                
+                // Ritüeli sıfırla (tekrar gelirse diye)
+                setTimeout(() => { 
+                    window.ritualComplete = false; 
+                    ritualProgress = 0;
+                    ritualBtn.innerHTML = `<div class="ritual-progress" id="ritual-ring"></div><i class="fa-solid fa-fingerprint" style="font-size:40px; color:rgba(255,255,255,0.5);"></i>`;
+                    ritualBtn.style.borderColor = "rgba(255,255,255,0.1)";
+                }, 2000);
+            }, 1500);
+        }
+
+        // --- AŞAMA 2: GEMINI SIMULASYONU & JSON ---
+        // Burası Gemini API'sine o verdiğimiz "Bacı/Kardeş" promptunu gönderip
+        // Cevabı aldığımız yerdir. Şimdilik MOCK DATA kullanıyoruz.
         
-        // Tamamlanmadıysa sıfırla
-        this.progress = 0;
-        this.status.innerText = "Enerji koptu! Tekrar dene.";
-        this.btn.style.boxShadow = "0 0 30px rgba(233, 69, 96, 0.5)";
-    },
+        const MOCK_GEMINI_JSON = {
+            "genel_yorum": "Canım benim, fincanına şöyle bir baktım da için biraz kabarmış ama ferahlamaya başlamışsın. Hanenin ortasında temiz bir yol var, sanki beklediğin o haber yola çıkmış geliyor.",
+            "ask_hayati": "Bak şurada bir 'S' harfi mi desem, yoksa yol mu desem... Kalbindeki kişiyle arandaki buzlar eriyor. Eğer yalnızsan, yakın çevrenden biri sana açılmak için fırsat kolluyor, gözünü dört aç!",
+            "kariyer_para": "Eline parça parça paralar geçecek bu hafta. İş yerinde ya da okulda bir tırmanış var, ama dedikodulara kulağını tıka, sadece işine odaklan kuzum.",
+            "motto": "Karanlık gecenin sonu her zaman aydınlıktır, sen ışığını koru."
+        };
 
-    complete: function() {
-        clearInterval(this.timer);
-        this.isComplete = true;
-        this.status.innerText = "Enerji Aktarımı Başarılı!";
-        this.btn.innerHTML = "✨";
-        this.btn.style.background = "#ffd700";
-        this.btn.style.color = "#000";
-        
-        if (navigator.vibrate) navigator.vibrate([100, 50, 100]); // Başarı titreşimi
+        function generateFalResult() {
+            const container = document.getElementById('result-container');
+            container.innerHTML = ''; // Temizle
 
-        // Sonuç ekranına yönlendir
-        setTimeout(() => {
-            app.showResult();
-            // Ritüeli sıfırla (bir sonraki fal için)
-            setTimeout(() => { this.resetRitual(); }, 2000);
-        }, 1000);
-    },
+            const dataMap = [
+                { title: "Genel Enerjin", text: MOCK_GEMINI_JSON.genel_yorum },
+                { title: "Aşk Durumun", text: MOCK_GEMINI_JSON.ask_hayati },
+                { title: "Para & Kariyer", text: MOCK_GEMINI_JSON.kariyer_para },
+                { title: "Sana Mesajım", text: MOCK_GEMINI_JSON.motto }
+            ];
 
-    resetRitual: function() {
-        this.isComplete = false;
-        this.progress = 0;
-        this.btn.innerHTML = '<div class="progress-ring" id="progress-ring"></div><span id="ritual-text">BASILI TUT</span>';
-        this.btn.style.background = 'radial-gradient(circle, #e94560 0%, #1a1a2e 70%)';
-        this.btn.style.color = 'white';
-        this.ring = document.getElementById('progress-ring'); // Element yeniden oluşturulduğu için referansı güncelle
-        this.status.innerText = "...";
-    }
-};
+            let delay = 0;
+            dataMap.forEach(item => {
+                const card = document.createElement('div');
+                card.className = 'result-card';
+                card.innerHTML = `<div class="result-header">${item.title}</div><div class="typewriter-text"></div>`;
+                container.appendChild(card);
 
-// Başlangıç
-app.init();
+                setTimeout(() => {
+                    card.classList.add('show');
+                    typeWriter(card.querySelector('.typewriter-text'), item.text, 0);
+                }, delay);
 
-</script>
+                delay += 2500; // Kartlar arası bekleme
+            });
+        }
+
+        function typeWriter(element, text, i) {
+            if (i < text.length) {
+                element.innerHTML += text.charAt(i);
+                setTimeout(() => typeWriter(element, text, i + 1), 20); // Yazma Hızı
+            }
+        }
+    </script>
 
 </body>
 </html>

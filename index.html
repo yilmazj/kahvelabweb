@@ -26,7 +26,7 @@
             --nav-height: 85px;
         }
 
-        /* --- DARK MODE (SENİN SEVDİĞİN BORDO/SİYAH) --- */
+        /* --- DARK MODE --- */
         body.dark-mode {
             --bg-body: #1a0204;
             --bg-card: #2a0508;
@@ -54,16 +54,11 @@
 
         .screen {
             display: none; flex-direction: column; height: 100%; width: 100%;
-            /* DÜZELTME 1: Ana sayfanın kaydırma olmadan sığması için height ve overflow ayarlandı.
-               padding-bottom, alt barın üzerini kapatmaması için gerekli. */
             overflow-y: hidden; 
             padding-bottom: var(--nav-height);
             background: var(--bg-body); animation: fadeIn 0.4s ease;
         }
-        /* Diğer ekranlar için kaydırmayı geri açalım */
-        #fortunes-screen, #profile-screen, #auth-screen {
-             overflow-y: auto;
-        }
+        #fortunes-screen, #profile-screen, #auth-screen { overflow-y: auto; }
 
         .screen.active { display: flex; }
         @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
@@ -79,12 +74,22 @@
         .header-brand { 
             font-family: 'Playfair Display', serif; 
             font-size: 26px; font-weight: 900; 
-            color: var(--text-main); /* Temaya göre değişir */
+            color: var(--text-main); 
             letter-spacing: 1px; 
             width: 100%; text-align: center;
         }
-        /* Home screen özel header rengi (Gradient üstünde hep beyaz kalsın diye override ediyoruz) */
-        #home-screen .header-brand { color: white; text-shadow: 0 2px 10px rgba(0,0,0,0.3); }
+        
+        /* ÖZEL KURAL: Home Screen Header Rengi */
+        /* Dark modda: Beyaz (Gradient'in üstünde değil ama karanlık tema bütünlüğü için) */
+        body.dark-mode #home-screen .header-brand { 
+            color: white; 
+            text-shadow: 0 2px 10px rgba(0,0,0,0.3); 
+        }
+        /* Light modda: BORDO (İstediğin Güncelleme) */
+        body:not(.dark-mode) #home-screen .header-brand { 
+            color: var(--primary); /* Koyu Bordo */
+            text-shadow: none;
+        }
 
         .header-title { font-size: 18px; font-weight: 600; position: absolute; left: 50%; transform: translateX(-50%); color: var(--text-main); }
 
@@ -92,25 +97,17 @@
         .hero-section {
             padding: 20px 0; 
             display: flex; flex-direction: column; align-items: center; justify-content: center;
-            /* Bu kısım hep kırmızı kalsın, marka kimliği */
             background: linear-gradient(180deg, var(--primary-light) 0%, var(--primary) 100%);
             position: relative; overflow: visible; 
-            /* DÜZELTME 1: Büyük kırmızı karenin boyutu küçültüldü. */
-            min-height: 360px; /* 440px'den 360px'e düşürüldü */
+            min-height: 360px;
             border-bottom-left-radius: 40px; border-bottom-right-radius: 40px;
             box-shadow: 0 10px 40px rgba(139, 0, 0, 0.3);
             margin-bottom: 20px;
         }
         
-        /* Pulse Alanı - Ortalandı */
         .pulse-container {
-            position: absolute; 
-            top: 42%; /* Butonun merkeziyle aynı olsun diye ayarladım */
-            left: 50%; 
-            transform: translate(-50%, -50%);
-            width: 320px; height: 320px; 
-            display: flex; justify-content: center; align-items: center; 
-            pointer-events: none;
+            position: absolute; top: 42%; left: 50%; transform: translate(-50%, -50%);
+            width: 320px; height: 320px; display: flex; justify-content: center; align-items: center; pointer-events: none;
         }
         .circle-bg {
             position: absolute; width: 300px; height: 300px; border-radius: 50%;
@@ -124,26 +121,23 @@
             100% { transform: scale(1); opacity: 0.5; }
         }
 
-        /* Ana Buton */
         .main-fal-btn {
             width: 160px; height: 160px; border-radius: 50%;
             background: linear-gradient(135deg, #8B0000 0%, #500000 100%);
             border: 3px solid var(--gold);
-            color: white; /* İSTEK: BEYAZ OLSUN */
+            color: white; 
             box-shadow: 0 0 40px rgba(0,0,0,0.4);
             z-index: 5; cursor: pointer; position: relative;
             display: flex; flex-direction: column; justify-content: center; align-items: center; gap: 8px;
             transition: transform 0.2s;
-            margin-top: -40px; /* Halka ile ortalamak için ince ayar */
+            margin-top: -40px;
         }
         .main-fal-btn:active { transform: scale(0.95); }
-        .main-fal-btn i { font-size: 44px; color: white; /* İkon da beyaz */ }
+        .main-fal-btn i { font-size: 44px; color: white; }
         .main-fal-btn span { font-size: 18px; font-weight: 800; letter-spacing: 0.5px; }
 
-        /* Hak Rozeti - DAİRE DIŞINA ALINDI */
         .credit-badge-pill {
-            position: absolute;
-            bottom: 40px; /* Hero'nun en altına yapıştır */
+            position: absolute; bottom: 40px; 
             background: rgba(0,0,0,0.4);
             padding: 10px 20px; border-radius: 30px;
             font-size: 14px; font-weight: 700; color: white; z-index: 6;
@@ -163,7 +157,6 @@
             z-index: 100;
             transition: background 0.3s;
         }
-        
         .nav-item { 
             display: flex; flex-direction: column; align-items: center; 
             color: var(--text-sub); 
@@ -171,22 +164,14 @@
             cursor: pointer; width: 70px; font-weight: 500; 
             transition: all 0.3s ease;
         }
-        /* DÜZELTME 2: Aydınlık modda aktif sekme rengi bordo yapıldı. */
-        .nav-item.active { 
-             /* Dark modda beyaz, Light modda bordo */
-             color: var(--primary) !important;
-        }
+        .nav-item.active { color: var(--primary) !important; }
         body.dark-mode .nav-item.active { color: white !important; }
-
         .nav-item i { font-size: 22px; transition: transform 0.2s; }
         .nav-item.active i { transform: translateY(-4px); }
 
-        /* --- ÖZET KARTLARI --- */
-        /* DÜZELTME 1 (DEVAMI): Günün özeti kutusu için padding ve margin ayarları
-           ekranın sığması için yeniden düzenlendi. */
+        /* --- UI COMPONENTS --- */
         .summary-container { padding: 0 24px; position: relative; margin-top: 0; padding-bottom: 0; flex: 1; display: flex; flex-direction: column; }
         .section-title { font-size: 18px; font-weight: 700; margin-bottom: 15px; color: var(--text-main); }
-        
         .summary-wrapper { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; flex: 1; }
         .widget-card {
             background: var(--bg-card); border-radius: 18px; padding: 16px;
@@ -197,7 +182,6 @@
         .widget-label { font-size: 11px; color: var(--text-sub); text-transform: uppercase; font-weight: 600; margin-bottom: 4px; }
         .widget-card.wide { grid-column: span 2; display: flex; align-items: center; justify-content: space-between; }
 
-        /* --- PROFİL & AYARLAR --- */
         .profile-header { text-align: center; padding: 30px 20px; border-bottom: 1px solid var(--border-color); }
         .menu-list { padding: 20px; }
         .menu-item {
@@ -207,7 +191,6 @@
             box-shadow: 0 2px 8px rgba(0,0,0,0.03);
         }
         
-        /* Premium Kart */
         .premium-card-v2 {
             margin: 0 24px; background: linear-gradient(135deg, #1C1C1E 0%, #000000 100%);
             border-radius: 20px; padding: 24px; position: relative; overflow: hidden;
@@ -220,22 +203,14 @@
         }
         .premium-feature-list li { color: #ddd; font-size: 13px; margin-bottom: 8px; display: flex; gap: 10px; }
 
-        /* --- AUTH FORM & TABS --- */
         .auth-tabs { display: flex; background: rgba(128,128,128,0.2); border-radius: 12px; padding: 4px; margin-bottom: 20px; }
         .auth-tab { flex: 1; text-align: center; padding: 10px; font-size: 14px; font-weight: 600; border-radius: 10px; color: var(--text-sub); cursor: pointer; transition: all 0.2s; }
         .auth-tab.active { background: var(--bg-card); color: var(--text-main); box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
-
         .auth-input { width: 100%; padding: 16px; margin-bottom: 12px; border-radius: 12px; border: 1px solid var(--border-color); background: var(--bg-card); color: var(--text-main); font-size: 15px; }
         .submit-btn { width: 100%; padding: 16px; border-radius: 14px; background: var(--primary); color: white; border: none; font-weight: 700; font-size: 16px; cursor: pointer; margin-top: 10px; box-shadow: 0 5px 15px rgba(139, 0, 0, 0.3); }
+        .social-btn { width: 100%; padding: 14px; border-radius: 12px; display: flex; align-items: center; justify-content: center; gap: 10px; font-size: 14px; font-weight: 600; cursor: pointer; margin-bottom: 10px; border: 1px solid var(--border-color); background: var(--bg-card); color: var(--text-main); }
 
-        .social-btn {
-            width: 100%; padding: 14px; border-radius: 12px;
-            display: flex; align-items: center; justify-content: center; gap: 10px;
-            font-size: 14px; font-weight: 600; cursor: pointer; margin-bottom: 10px;
-            border: 1px solid var(--border-color); background: var(--bg-card); color: var(--text-main);
-        }
-
-        /* --- MODALLAR --- */
+        /* Modals */
         .modal-overlay { position: fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.6); backdrop-filter: blur(5px); z-index: 190; display: none; opacity: 0; transition: opacity 0.3s; }
         .modal-overlay.open { display: block; opacity: 1; }
         .action-sheet, .modal-sheet { 
@@ -247,13 +222,21 @@
         .action-sheet.open, .modal-sheet.open { bottom: 0; }
         .action-btn { width: 100%; padding: 16px; margin-bottom: 10px; border-radius: 14px; background: var(--bg-body); border: 1px solid var(--border-color); color: var(--text-main); font-size: 16px; font-weight: 600; cursor: pointer; display: flex; gap: 10px; justify-content: center; align-items: center;}
         
-        /* Tema Seçenekleri */
         .theme-opt { flex:1; padding:10px; text-align:center; border-radius:8px; cursor:pointer; font-size:13px; color:var(--text-sub); }
         .theme-opt.active-theme { background:var(--bg-body); color:var(--text-main); box-shadow:0 2px 5px rgba(0,0,0,0.1); font-weight:600; }
 
+        /* Delete Account Button Style */
+        .delete-account-btn {
+            margin-top: 30px; width: 100%; padding: 16px; border-radius: 14px;
+            background: rgba(255, 59, 48, 0.1); color: #FF3B30;
+            border: 1px solid rgba(255, 59, 48, 0.2); font-weight: 600; cursor: pointer;
+        }
+
     </style>
 </head>
-<body class="dark-mode"> <div id="app">
+<body class="dark-mode"> 
+
+    <div id="app">
 
         <div id="overlay" class="modal-overlay" onclick="closeAllSheets()"></div>
 
@@ -305,12 +288,10 @@
                 <div class="pulse-container">
                     <div class="circle-bg"></div>
                 </div>
-
                 <button class="main-fal-btn" onclick="openPhotoOptions()">
                     <i class="fa-solid fa-camera"></i>
                     <span>FAL GÖNDER</span>
                 </button>
-                
                 <div class="credit-badge-pill">
                     <i class="fa-solid fa-bolt" style="color:var(--gold)"></i>
                     <span id="credit-count">3</span> Hak
@@ -362,7 +343,6 @@
                     <i class="fa-solid fa-user" style="font-size:30px; color:var(--text-main);"></i>
                 </div>
                 <h2 id="profile-name" style="color:var(--text-main); font-size:20px;">Misafir Kullanıcı</h2>
-                
                 <div id="guest-actions" style="margin-top:15px;">
                      <button class="submit-btn" style="width:auto; padding:10px 30px;" onclick="navTo('auth-screen')">Giriş Yap / Kayıt Ol</button>
                 </div>
@@ -397,20 +377,13 @@
             </div>
         </div>
 
-        <div id="photo-options-sheet" class="action-sheet">
-            <h3 style="text-align:center; margin-bottom:20px; font-size:16px;">Fal Gönder</h3>
-            <button class="action-btn" onclick="alert('Kamera')"><i class="fa-solid fa-camera"></i> Fotoğraf Çek</button>
-            <button class="action-btn" onclick="alert('Galeri')"><i class="fa-solid fa-image"></i> Galeriden Seç</button>
-            <button class="action-btn" style="color:#FF3B30; background:rgba(255,59,48,0.1);" onclick="closeAllSheets()">Vazgeç</button>
-        </div>
-
         <div id="settings-modal" class="modal-sheet">
              <div class="header" style="padding:0; margin-bottom:20px; border:none; justify-content:space-between;">
                 <div style="font-weight:700;">Ayarlar</div>
                 <div style="color:var(--primary); cursor:pointer;" onclick="closeAllSheets()">Bitti</div>
             </div>
             
-            <div style="font-size:12px; color:var(--text-sub); margin-bottom:10px; text-transform:uppercase;">Görünüm</div>
+            <div style="font-size:12px; color:var(--text-sub); margin-bottom:10px; text-transform:uppercase;">Tema Tercihi</div>
             <div style="display:flex; background:rgba(128,128,128,0.1); padding:4px; border-radius:10px; margin-bottom:20px;">
                 <div class="theme-opt" onclick="setTheme('light', this)">Aydınlık</div>
                 <div class="theme-opt" onclick="setTheme('dark', this)">Karanlık</div>
@@ -422,6 +395,17 @@
                     <span>Ses Efektleri</span> <i class="fa-solid fa-toggle-off" style="color:var(--text-sub); font-size:24px;"></i>
                 </div>
             </div>
+
+            <button class="delete-account-btn" onclick="window.handleDeleteAccount()">
+                Hesabımı Sil
+            </button>
+        </div>
+
+        <div id="photo-options-sheet" class="action-sheet">
+            <h3 style="text-align:center; margin-bottom:20px; font-size:16px;">Fal Gönder</h3>
+            <button class="action-btn" onclick="alert('Kamera')"><i class="fa-solid fa-camera"></i> Fotoğraf Çek</button>
+            <button class="action-btn" onclick="alert('Galeri')"><i class="fa-solid fa-image"></i> Galeriden Seç</button>
+            <button class="action-btn" style="color:#FF3B30; background:rgba(255,59,48,0.1);" onclick="closeAllSheets()">Vazgeç</button>
         </div>
 
         <div class="bottom-nav">
@@ -440,9 +424,8 @@
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-        import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+        import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, onAuthStateChanged, signOut, deleteUser } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
-        // SENİN FIREBASE CONFİGİN
         const firebaseConfig = {
           apiKey: "AIzaSyDVV5cLOkjaJ3k-FUwqRE4LucN293RPBbM",
           authDomain: "kahvelabweb.firebaseapp.com",
@@ -455,7 +438,7 @@
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
 
-        // --- AUTH IŞLEMLERI ---
+        // --- AUTH ---
         window.switchAuthTab = function(tab) {
             document.querySelectorAll('.auth-tab').forEach(t => t.classList.remove('active'));
             document.getElementById('tab-' + tab).classList.add('active');
@@ -492,15 +475,34 @@
             try { await signOut(auth); } catch(e) { console.log(e); }
         }
 
-        // --- AUTH STATE LISTENER ---
+        // UPDATE: Hesabı Sil Fonksiyonu
+        window.handleDeleteAccount = async function() {
+            const user = auth.currentUser;
+            if(!user) return;
+            
+            const confirmation = confirm("Hesabınızı kalıcı olarak silmek istediğinize emin misiniz? Bu işlem geri alınamaz.");
+            if(confirmation) {
+                try {
+                    await deleteUser(user);
+                    alert("Hesabınız silindi.");
+                    window.closeAllSheets();
+                } catch(error) {
+                    if(error.code === 'auth/requires-recent-login') {
+                        alert("Güvenlik gereği hesabınızı silmek için yeniden giriş yapmalısınız.");
+                        await signOut(auth);
+                    } else {
+                        alert("Hata: " + error.message);
+                    }
+                }
+            }
+        }
+
         onAuthStateChanged(auth, (user) => {
             if (user) {
-                // Giriş Yapıldı
                 document.getElementById('profile-name').innerText = user.email.split('@')[0];
                 document.getElementById('summary-content').style.filter = 'none';
                 document.getElementById('lock-overlay').style.display = 'none';
                 
-                // Profil UI
                 document.getElementById('guest-actions').classList.add('hidden');
                 document.getElementById('premium-area').classList.remove('hidden');
                 document.getElementById('btn-logout-wrapper').classList.remove('hidden');
@@ -513,7 +515,6 @@
                 
                 window.navTo('home-screen'); 
             } else {
-                // Çıkış Yapıldı
                 document.getElementById('profile-name').innerText = "Misafir Kullanıcı";
                 document.getElementById('guest-actions').classList.remove('hidden');
                 document.getElementById('premium-area').classList.add('hidden');
@@ -524,7 +525,7 @@
             }
         });
 
-        // --- UI & TEMA ---
+        // --- UI ---
         window.navTo = function(screenId, navEl) {
             document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
             document.getElementById(screenId).classList.add('active');
@@ -536,18 +537,15 @@
         }
         
         window.setTheme = function(mode, el) {
-            // Buton görselliği
             document.querySelectorAll('.theme-opt').forEach(t => t.classList.remove('active-theme'));
             el.classList.add('active-theme');
 
-            // Mantık
             const body = document.body;
             if(mode === 'dark') {
                 body.classList.add('dark-mode');
             } else if (mode === 'light') {
                 body.classList.remove('dark-mode');
             } else {
-                // Sistem
                 if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
                     body.classList.add('dark-mode');
                 } else {

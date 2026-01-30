@@ -536,7 +536,7 @@
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
         import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, onAuthStateChanged, signOut, deleteUser } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-        import { getFirestore, doc, setDoc, getDoc, updateDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+        import { getFirestore, doc, setDoc, getDoc, updateDoc, enableIndexedDbPersistence } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
         const firebaseConfig = {
           apiKey: "AIzaSyDVV5cLOkjaJ3k-FUwqRE4LucN293RPBbM",
@@ -550,6 +550,16 @@
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
         const db = getFirestore(app);
+
+        // --- OFFLINE PERSISTENCE (Çevrimdışı Çalışma) ---
+        // Gizli sekme buna izin vermeyebilir, o yüzden .catch ile sessizce geçiyoruz.
+        enableIndexedDbPersistence(db).catch((err) => {
+            if (err.code == 'failed-precondition') {
+                console.log('Birden fazla sekme açık, o yüzden cache yapılamadı.');
+            } else if (err.code == 'unimplemented') {
+                console.log('Tarayıcı çevrimdışı depolamayı desteklemiyor (Gizli Sekme olabilir).');
+            }
+        });
 
         // GEMINI API KEY
         const GEMINI_API_KEY = "AIzaSyCjSBmLJsOOb-uG9SRPt2c8cA5cAu1sfdE";
@@ -576,16 +586,21 @@
             const email = document.getElementById('login-email').value;
             const pass = document.getElementById('login-pass').value;
             try { 
-                // BURAYI DEĞİŞTİRDİM: Sonucu bir değişkene atadım.
                 const userCredential = await signInWithEmailAndPassword(auth, email, pass);
                 
-                // BURAYI EKLEDİM: Dinleyiciyi beklemeden manuel kontrol ve yönlendirme
-                const hasProfile = await checkUserProfile(userCredential.user.uid);
-                if(hasProfile) {
-                    await loadUserProfile(userCredential.user.uid);
+                // BURASI GÜNCELLENDİ: Hata alsa bile (Offline hatası) girişi engellemeyecek.
+                try {
+                    const hasProfile = await checkUserProfile(userCredential.user.uid);
+                    if(hasProfile) {
+                        await loadUserProfile(userCredential.user.uid);
+                    }
+                    // Profil olsa da olmasa da hata vermediği sürece anasayfaya
+                     window.navTo('home-screen');
+                } catch (profileError) {
+                    console.log("Profil kontrol hatası (Offline/Gizli Sekme):", profileError);
+                    // Giriş başarılı (Auth OK), sadece veritabanı okunamadı.
+                    // Kullanıcıyı engelleme, içeri al. Sonra yüklenir.
                     window.navTo('home-screen');
-                } else {
-                    window.navTo('onboarding-screen');
                 }
             } 
             catch (error) { alert("Giriş Hatası: " + error.message); }
@@ -596,10 +611,7 @@
             const pass = document.getElementById('reg-pass').value;
             if(!email || !pass) { alert("Lütfen alanları doldurun."); return; }
             try { 
-                // BURAYI DEĞİŞTİRDİM
                 await createUserWithEmailAndPassword(auth, email, pass); 
-                
-                // BURAYI EKLEDİM: Yeni kayıt kesinlikle profilsizdir, direkt Onboarding'e at.
                 window.navTo('onboarding-screen');
             } catch (error) { alert("Kayıt Hatası: " + error.message); }
         }
@@ -709,16 +721,13 @@
                 }
 
                 // CHECK PROFILE EXISTENCE
-                const hasProfile = await checkUserProfile(user.uid);
-                if(hasProfile) {
-                    await loadUserProfile(user.uid);
-                    // DİKKAT: Burada otomatik navTo var ama tıklama anında manuel tetiklediğimiz için sorun olmaz.
-                    // window.navTo('home-screen'); 
-                    // Burası sadece sayfa yenilendiğinde çalışacak şekilde kalsın, sorun yok.
-                } else {
-                    // window.navTo('onboarding-screen');
-                }
-                 // Not: onAuthStateChanged içine dokunmadım, sadece handleLogin ve handleRegister'ı düzelttim ki anında tepki versin.
+                // onAuthStateChanged kendi zamanında çalışsın, elleme.
+                try {
+                    const hasProfile = await checkUserProfile(user.uid);
+                    if(hasProfile) {
+                        await loadUserProfile(user.uid);
+                    }
+                } catch(e) { console.log("Arkaplan profil yükleme hatası:", e); }
 
             } else {
                 document.getElementById('profile-name').innerText = "Misafir Kullanıcı";

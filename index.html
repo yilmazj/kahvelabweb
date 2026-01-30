@@ -556,7 +556,7 @@
 
         let currentBase64Image = "";
 
-        // --- AUTH ---
+                // --- AUTH ---
         window.switchAuthTab = function(tab) {
             document.querySelectorAll('.auth-tab').forEach(t => t.classList.remove('active'));
             document.getElementById('tab-' + tab).classList.add('active');
@@ -575,41 +575,97 @@
         window.handleLogin = async function() {
             const email = document.getElementById('login-email').value;
             const pass = document.getElementById('login-pass').value;
+            
+            // Yükleniyor göster
+            document.getElementById('loading-overlay').style.display = 'flex';
+            document.getElementById('loading-text').innerText = "Giriş yapılıyor...";
+
             try { 
                 await signInWithEmailAndPassword(auth, email, pass);
-                // Auth state change will handle redirection
+                // Başarılı olursa onAuthStateChanged tetiklenecek ama biz işi sağlama alalım
+                // Loading'i onAuthStateChanged içinde kapatacağız
             } 
-            catch (error) { alert("Giriş Hatası: " + error.message); }
+            catch (error) { 
+                document.getElementById('loading-overlay').style.display = 'none';
+                alert("Giriş Hatası: " + error.message); 
+            }
         }
 
         window.handleRegister = async function() {
             const email = document.getElementById('reg-email').value;
             const pass = document.getElementById('reg-pass').value;
+            
             if(!email || !pass) { alert("Lütfen alanları doldurun."); return; }
+            
+            // Yükleniyor göster
+            document.getElementById('loading-overlay').style.display = 'flex';
+            document.getElementById('loading-text').innerText = "Hesap oluşturuluyor...";
+
             try { 
                 await createUserWithEmailAndPassword(auth, email, pass); 
-                // Auth state change will handle redirection to onboarding
-            } catch (error) { alert("Kayıt Hatası: " + error.message); }
+                // Başarılı olursa AuthStateChanged yakalayacak
+                // Yeni kayıt olduğu için Onboarding ekranına yönlendirme state listener içinde yapılacak
+            } catch (error) { 
+                document.getElementById('loading-overlay').style.display = 'none';
+                alert("Kayıt Hatası: " + error.message); 
+            }
         }
 
         window.logoutUser = async function() {
-            try { await signOut(auth); window.navTo('auth-screen'); } catch(e) { console.log(e); }
+            try { 
+                await signOut(auth); 
+                window.navTo('auth-screen'); 
+            } catch(e) { console.log(e); }
         }
 
-        window.handleDeleteAccount = async function() {
-            const user = auth.currentUser;
-            if(!user) return;
-            const confirmation = confirm("Hesabınızı kalıcı olarak silmek istediğinize emin misiniz? Bu işlem geri alınamaz.");
-            if(confirmation) {
-                try {
-                    await deleteUser(user);
-                    alert("Hesabınız silindi.");
-                    window.closeAllSheets();
-                } catch(error) {
-                    alert("Hata: " + error.message);
+        // ... Diğer fonksiyonlar aynı kalacak ...
+
+        // Auth Listener'ı da şu şekilde güncelle (Loading'i kapatması için):
+        onAuthStateChanged(auth, async (user) => {
+            // Yükleniyor ekranını her durumda kapat
+            document.getElementById('loading-overlay').style.display = 'none';
+
+            if (user) {
+                document.getElementById('profile-name').innerText = user.email.split('@')[0];
+                document.getElementById('guest-actions').classList.add('hidden');
+                document.getElementById('premium-area').classList.remove('hidden');
+                document.getElementById('btn-logout-wrapper').classList.remove('hidden');
+                document.getElementById('menu-account-info').classList.remove('hidden');
+                
+                document.getElementById('summary-content').style.filter = 'none';
+                document.getElementById('lock-overlay').style.display = 'none';
+
+                if(user.email === 'volkan@litre.com') {
+                    document.querySelector('.premium-btn').innerText = "Premium Üye Aktif";
+                    document.querySelector('.premium-btn').style.background = "#4cd964";
+                    document.querySelector('.premium-btn').style.color = "white";
+                }
+
+                // CHECK PROFILE EXISTENCE
+                const hasProfile = await checkUserProfile(user.uid);
+                if(hasProfile) {
+                    await loadUserProfile(user.uid);
+                    window.navTo('home-screen');
+                } else {
+                    window.navTo('onboarding-screen');
+                }
+
+            } else {
+                document.getElementById('profile-name').innerText = "Misafir Kullanıcı";
+                document.getElementById('guest-actions').classList.remove('hidden');
+                document.getElementById('premium-area').classList.add('hidden');
+                document.getElementById('btn-logout-wrapper').classList.add('hidden');
+                document.getElementById('menu-account-info').classList.add('hidden');
+                
+                document.getElementById('summary-content').style.filter = 'blur(6px)';
+                document.getElementById('lock-overlay').style.display = 'flex';
+                
+                // Eğer kullanıcı onboarding ekranındaysa ve çıkış yapmışsa login'e at
+                if(document.getElementById('onboarding-screen').classList.contains('active')) {
+                    window.navTo('auth-screen');
                 }
             }
-        }
+        });
 
         // --- FIRESTORE USER PROFILE ---
         window.saveUserProfile = async function(isOnboarding) {

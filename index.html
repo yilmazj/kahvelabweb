@@ -459,19 +459,45 @@ const db = getFirestore(app);
 
 /* ---------------- AUTH ---------------- */
 window.handleLogin = async () => {
-  await signInWithEmailAndPassword(
-    auth,
-    login-email.value,
-    login-pass.value
-  );
+  const email = document.getElementById("login-email").value;
+  const pass  = document.getElementById("login-pass").value;
+
+  if (!email || !pass) {
+    alert("E-posta ve şifre boş olamaz");
+    return;
+  }
+
+  try {
+    await signInWithEmailAndPassword(auth, email, pass);
+  } catch (e) {
+    alert("Giriş hatası: " + e.message);
+  }
 };
 
 window.handleRegister = async () => {
-  const res = await createUserWithEmailAndPassword(
-    auth,
-    reg-email.value,
-    reg-pass.value
-  );
+  const res = window.handleRegister = async () => {
+  const email = document.getElementById("reg-email").value;
+  const pass  = document.getElementById("reg-pass").value;
+
+  if (!email || !pass) {
+    alert("Alanlar boş");
+    return;
+  }
+
+  try {
+    const res = await createUserWithEmailAndPassword(auth, email, pass);
+
+    await setDoc(doc(db, "users", res.user.uid), {
+      email,
+      createdAt: Date.now(),
+      profileCompleted: false
+    });
+
+    alert("Kayıt başarılı");
+  } catch (e) {
+    alert("Kayıt hatası: " + e.message);
+  }
+};
 
   await setDoc(doc(db, "users", res.user.uid), {
     email: res.user.email,

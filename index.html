@@ -243,6 +243,12 @@
         }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 
+        /* Fotoğraf Thumbnail Stili */
+        .photo-grid { display: flex; gap: 10px; justify-content: center; margin-bottom: 15px; }
+        .photo-thumb { width: 80px; height: 80px; object-fit: cover; border-radius: 12px; border: 1px solid var(--gold); }
+        
+        .locked-input { opacity: 0.6; pointer-events: none; background: rgba(0,0,0,0.05); }
+
     </style>
 </head>
 <body class="dark-mode"> 
@@ -436,7 +442,7 @@
                         <li><i class="fa-solid fa-check" style="color:var(--gold)"></i> Falcıya 1 Soru Hakkı</li>
                         <li><i class="fa-solid fa-check" style="color:var(--gold)"></i> Detaylı İlişki Analizi</li>
                     </ul>
-                    <button class="premium-btn">Premium'a Geç ₺99/ay</button>
+                    <button class="premium-btn" onclick="navTo('profile-screen')">Premium'a Geç ₺99/ay</button>
                 </div>
             </div>
 
@@ -486,6 +492,9 @@
 
         <div id="photo-options-sheet" class="action-sheet">
             <h3 style="text-align:center; margin-bottom:20px; font-size:16px;">Fal Gönder</h3>
+            <div id="photo-instructions" style="text-align:center; color:var(--primary); font-weight:700; margin-bottom:15px;">
+                1. Fotoğrafı Seç (Fincan İçi)
+            </div>
             <button class="action-btn" onclick="triggerCamera()"><i class="fa-solid fa-camera"></i> Fotoğraf Çek</button>
             <button class="action-btn" onclick="triggerGallery()"><i class="fa-solid fa-image"></i> Galeriden Seç</button>
             <button class="action-btn" style="color:#FF3B30; background:rgba(255,59,48,0.1);" onclick="closeAllSheets()">Vazgeç</button>
@@ -496,14 +505,25 @@
                 <div style="font-weight:700;">Bilgileri Kontrol Et</div>
                 <div style="color:var(--primary); cursor:pointer;" onclick="closeAllSheets()">İptal</div>
             </div>
-            <div style="text-align:center; margin-bottom:15px;">
-                <img id="preview-image" src="" style="width:100px; height:100px; object-fit:cover; border-radius:12px; border:1px solid var(--gold);">
-            </div>
+            
+            <div class="photo-grid" id="photo-grid-preview">
+                </div>
+
             <p style="font-size:13px; color:var(--text-sub); margin-bottom:15px; text-align:center;">
-                Falına bu bilgilerle bakılacak. Sadece bu fal için değiştirmek istersen aşağıdan düzenleyebilirsin.
+                Falına bu bilgilerle bakılacak. Hatalıysa düzeltebilirsin.
             </p>
 
             <input type="text" id="temp-name" class="auth-input" placeholder="Ad">
+            
+            <div style="display:flex; gap:10px;">
+                <select id="temp-gender" class="auth-input" style="flex:1;">
+                    <option value="Erkek">Erkek</option>
+                    <option value="Kadın">Kadın</option>
+                    <option value="Diğer">Diğer</option>
+                </select>
+                <input type="date" id="temp-birthdate" class="auth-input" style="flex:1;">
+            </div>
+
             <select id="temp-status" class="auth-input">
                 <option value="Bekar">Bekar</option>
                 <option value="İlişkisi Var">İlişkisi Var</option>
@@ -514,6 +534,11 @@
             </select>
             <input type="text" id="temp-job" class="auth-input" placeholder="Meslek">
             
+            <div style="margin-top:20px; margin-bottom:10px;">
+                <div style="font-size:12px; font-weight:700; color:var(--text-main); margin-bottom:5px;">FALCIYA SOR (Premium'a Özel)</div>
+                <textarea id="premium-question" class="auth-input" rows="3" placeholder="Merak ettiğin özel bir soru var mı?"></textarea>
+            </div>
+
             <button class="submit-btn" onclick="sendToGemini()">
                 <i class="fa-solid fa-sparkles"></i> FALIMA BAK
             </button>
@@ -551,20 +576,13 @@
         const auth = getAuth(app);
         const db = getFirestore(app);
 
-        // --- OFFLINE PERSISTENCE (Çevrimdışı Çalışma) ---
-        // Gizli sekme buna izin vermeyebilir, o yüzden .catch ile sessizce geçiyoruz.
-        enableIndexedDbPersistence(db).catch((err) => {
-            if (err.code == 'failed-precondition') {
-                console.log('Birden fazla sekme açık, o yüzden cache yapılamadı.');
-            } else if (err.code == 'unimplemented') {
-                console.log('Tarayıcı çevrimdışı depolamayı desteklemiyor (Gizli Sekme olabilir).');
-            }
-        });
+        // Offline Persistence
+        enableIndexedDbPersistence(db).catch((err) => { console.log(err.code); });
 
         // GEMINI API KEY
         const GEMINI_API_KEY = "AIzaSyCjSBmLJsOOb-uG9SRPt2c8cA5cAu1sfdE";
 
-        let currentBase64Image = "";
+        let uploadedImages = []; // Stores 3 images
 
         // --- AUTH ---
         window.switchAuthTab = function(tab) {
@@ -587,21 +605,11 @@
             const pass = document.getElementById('login-pass').value;
             try { 
                 const userCredential = await signInWithEmailAndPassword(auth, email, pass);
-                
-                // BURASI GÜNCELLENDİ: Hata alsa bile (Offline hatası) girişi engellemeyecek.
                 try {
                     const hasProfile = await checkUserProfile(userCredential.user.uid);
-                    if(hasProfile) {
-                        await loadUserProfile(userCredential.user.uid);
-                    }
-                    // Profil olsa da olmasa da hata vermediği sürece anasayfaya
-                     window.navTo('home-screen');
-                } catch (profileError) {
-                    console.log("Profil kontrol hatası (Offline/Gizli Sekme):", profileError);
-                    // Giriş başarılı (Auth OK), sadece veritabanı okunamadı.
-                    // Kullanıcıyı engelleme, içeri al. Sonra yüklenir.
+                    if(hasProfile) { await loadUserProfile(userCredential.user.uid); }
                     window.navTo('home-screen');
-                }
+                } catch (profileError) { window.navTo('home-screen'); }
             } 
             catch (error) { alert("Giriş Hatası: " + error.message); }
         }
@@ -654,12 +662,7 @@
             }
 
             const userData = {
-                name: name,
-                birthdate: birthdate,
-                gender: gender,
-                status: status,
-                job: job,
-                updatedAt: new Date()
+                name: name, birthdate: birthdate, gender: gender, status: status, job: job, updatedAt: new Date()
             };
 
             try {
@@ -667,37 +670,35 @@
                 if(isOnboarding) {
                     window.navTo('home-screen');
                 } else {
+                    // İSTEK 1: Kaydedildi yazısı ve otomatik yönlendirme
                     alert("Bilgiler güncellendi!");
                     window.navTo('profile-screen');
                 }
-            } catch(e) {
-                alert("Kaydetme hatası: " + e.message);
-            }
+            } catch(e) { alert("Kaydetme hatası: " + e.message); }
         }
 
-        // Check if user has profile data
         async function checkUserProfile(uid) {
             const docRef = doc(db, "users", uid);
             const docSnap = await getDoc(docRef);
             return docSnap.exists();
         }
 
-        // Load data into edit forms
         async function loadUserProfile(uid) {
             const docRef = doc(db, "users", uid);
             const docSnap = await getDoc(docRef);
             if (docSnap.exists()) {
                 const data = docSnap.data();
-                // Set Onboarding fields (if returning)
-                // Set Edit fields
+                // Edit fields
                 document.getElementById('edit-name').value = data.name || "";
                 document.getElementById('edit-birthdate').value = data.birthdate || "";
                 document.getElementById('edit-gender').value = data.gender || "";
                 document.getElementById('edit-status').value = data.status || "";
                 document.getElementById('edit-job').value = data.job || "";
                 
-                // Set Temp fields for fortune
+                // Temp fields for fortune
                 document.getElementById('temp-name').value = data.name || "";
+                document.getElementById('temp-birthdate').value = data.birthdate || "";
+                document.getElementById('temp-gender').value = data.gender || "";
                 document.getElementById('temp-status').value = data.status || "";
                 document.getElementById('temp-job').value = data.job || "";
             }
@@ -720,14 +721,10 @@
                     document.querySelector('.premium-btn').style.color = "white";
                 }
 
-                // CHECK PROFILE EXISTENCE
-                // onAuthStateChanged kendi zamanında çalışsın, elleme.
                 try {
                     const hasProfile = await checkUserProfile(user.uid);
-                    if(hasProfile) {
-                        await loadUserProfile(user.uid);
-                    }
-                } catch(e) { console.log("Arkaplan profil yükleme hatası:", e); }
+                    if(hasProfile) { await loadUserProfile(user.uid); }
+                } catch(e) { console.log(e); }
 
             } else {
                 document.getElementById('profile-name').innerText = "Misafir Kullanıcı";
@@ -738,37 +735,96 @@
                 
                 document.getElementById('summary-content').style.filter = 'blur(6px)';
                 document.getElementById('lock-overlay').style.display = 'flex';
-                
-                // If on restricted screen, go back to login
-                if(document.getElementById('onboarding-screen').classList.contains('active')) {
-                    window.navTo('auth-screen');
-                }
+                if(document.getElementById('onboarding-screen').classList.contains('active')) { window.navTo('auth-screen'); }
             }
         });
 
-        // --- GEMINI & IMAGE HANDLING ---
+        // --- GEMINI & IMAGE HANDLING (3 PHOTO LOGIC) ---
 
         window.triggerCamera = function() {
             document.getElementById('file-input').click();
-            closeAllSheets();
+            // Don't close sheet yet, wait for logic
         }
         window.triggerGallery = function() {
             document.getElementById('file-input').click();
-            closeAllSheets();
+        }
+
+        // Fal Gönder butonu (Reset logic)
+        window.openPhotoOptions = function() {
+            uploadedImages = []; // Reset
+            updateInstructionText();
+            document.getElementById('overlay').classList.add('open');
+            document.getElementById('photo-options-sheet').classList.add('open');
+        }
+
+        function updateInstructionText() {
+            const txt = document.getElementById('photo-instructions');
+            if(uploadedImages.length === 0) txt.innerText = "1. Fotoğrafı Seç (Fincan İçi)";
+            else if(uploadedImages.length === 1) txt.innerText = "2. Fotoğrafı Seç (Tabak)";
+            else if(uploadedImages.length === 2) txt.innerText = "3. Fotoğrafı Seç (Genel Açı)";
         }
 
         window.handleFileSelect = function(input) {
             if (input.files && input.files[0]) {
                 const reader = new FileReader();
                 reader.onload = function(e) {
-                    currentBase64Image = e.target.result.split(',')[1]; // Remove data:image/jpeg;base64,
-                    document.getElementById('preview-image').src = e.target.result;
-                    
-                    // Show Confirmation Modal
-                    openModal('confirm-info-modal');
+                    const base64 = e.target.result.split(',')[1];
+                    const fullData = e.target.result;
+
+                    // Add to array
+                    uploadedImages.push({ base64: base64, src: fullData });
+
+                    if(uploadedImages.length < 3) {
+                        // More photos needed
+                        alert(uploadedImages.length + ". Fotoğraf Tamam! Şimdi sıradakini seç.");
+                        updateInstructionText();
+                        // Automatically trigger next select for UX or wait user
+                         document.getElementById('file-input').value = ""; // Clear input to allow same file
+                         document.getElementById('file-input').click();
+                    } else {
+                        // All 3 done
+                        document.getElementById('file-input').value = "";
+                        closeAllSheets();
+                        showConfirmModal();
+                    }
                 };
                 reader.readAsDataURL(input.files[0]);
             }
+        }
+
+        function showConfirmModal() {
+            // Populate Photo Grid
+            const grid = document.getElementById('photo-grid-preview');
+            grid.innerHTML = "";
+            uploadedImages.forEach(img => {
+                const el = document.createElement('img');
+                el.src = img.src;
+                el.className = 'photo-thumb';
+                grid.appendChild(el);
+            });
+
+            // Check Premium for Question Input
+            const user = auth.currentUser;
+            const qInput = document.getElementById('premium-question');
+            
+            if(user && user.email === 'volkan@litre.com') {
+                qInput.disabled = false;
+                qInput.placeholder = "Özel sorunu buraya yaz...";
+                qInput.classList.remove('locked-input');
+            } else {
+                qInput.disabled = true;
+                qInput.placeholder = "Sadece Premium Üyeler Soru Sorabilir";
+                qInput.classList.add('locked-input');
+                // Click listener to upsell
+                qInput.onclick = function() {
+                    if(confirm("Bu özellik Premium üyeler içindir. Premium'a geçmek ister misin?")) {
+                        closeAllSheets();
+                        window.navTo('profile-screen'); // Or open premium modal directly
+                    }
+                }
+            }
+
+            openModal('confirm-info-modal');
         }
 
         window.sendToGemini = async function() {
@@ -777,34 +833,42 @@
 
             // Get temp data
             const tName = document.getElementById('temp-name').value;
+            const tGender = document.getElementById('temp-gender').value;
+            const tBirth = document.getElementById('temp-birthdate').value;
             const tStatus = document.getElementById('temp-status').value;
             const tJob = document.getElementById('temp-job').value;
+            const tQuestion = document.getElementById('premium-question').value;
 
             // Show loading
             closeAllSheets();
             document.getElementById('loading-overlay').style.display = 'flex';
 
+            let questionText = "";
+            if(tQuestion && tQuestion.trim() !== "") {
+                questionText = `Kullanıcının sana özel sorusu var: "${tQuestion}". Bu soruya da odaklan.`;
+            }
+
             const promptText = `
                 Sen mistik ve bilge bir kahve falı yorumcususun. 
-                Kullanıcı Adı: ${tName}.
-                İlişki Durumu: ${tStatus}.
-                Meslek: ${tJob}.
+                Kullanıcı: ${tName}, ${tGender}, ${tBirth} doğumlu.
+                İlişki: ${tStatus}, Meslek: ${tJob}.
+                ${questionText}
                 
-                Bu fotoğraftaki kahve fincanını bu bilgilere göre yorumla. 
+                Bu 3 fotoğraftaki (fincan, tabak, genel) kahve falını yorumla. 
                 Samimi, gizemli ve biraz sokak ağzı ama saygılı bir dil kullan. 
                 Gelecek, aşk ve kariyer hakkında kısa ve vurucu 3 paragraf yaz.
             `;
+
+            // Prepare Payload with multiple images
+            const imageParts = uploadedImages.map(img => ({
+                "inline_data": { "mime_type": "image/jpeg", "data": img.base64 }
+            }));
 
             const payload = {
                 "contents": [{
                     "parts": [
                         {"text": promptText},
-                        {
-                            "inline_data": {
-                                "mime_type": "image/jpeg",
-                                "data": currentBase64Image
-                            }
-                        }
+                        ...imageParts
                     ]
                 }]
             };
@@ -817,14 +881,11 @@
                 });
 
                 const data = await response.json();
-                
                 document.getElementById('loading-overlay').style.display = 'none';
 
                 if(data.candidates && data.candidates[0].content) {
                     const fortuneText = data.candidates[0].content.parts[0].text;
-                    // Format text for better reading (bold stars etc)
                     const formattedText = fortuneText.replace(/\*\*(.*?)\*\*/g, '<br><strong>$1</strong>');
-                    
                     document.getElementById('fortune-text-area').innerHTML = formattedText;
                     document.getElementById('fortune-text-area').style.textAlign = "left";
                     window.navTo('fortunes-screen');
@@ -863,6 +924,8 @@
         }
 
         window.openPhotoOptions = function() {
+            uploadedImages = []; // Reset photos on open
+            updateInstructionText();
             document.getElementById('overlay').classList.add('open');
             document.getElementById('photo-options-sheet').classList.add('open');
         }

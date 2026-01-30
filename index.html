@@ -6,7 +6,6 @@
     <title>KahveLab - Premium</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Playfair+Display:wght@700;900&display=swap" rel="stylesheet">
-    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
     
     <style>
         :root {
@@ -59,7 +58,7 @@
             padding-bottom: var(--nav-height);
             background: var(--bg-body); animation: fadeIn 0.4s ease;
         }
-        #fortunes-screen, #profile-screen, #auth-screen, #onboarding-screen { overflow-y: auto; }
+        #fortunes-screen, #profile-screen, #auth-screen { overflow-y: auto; }
 
         .screen.active { display: flex; }
         @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
@@ -80,12 +79,15 @@
             width: 100%; text-align: center;
         }
         
+        /* ÖZEL KURAL: Home Screen Header Rengi */
+        /* Dark modda: Beyaz (Gradient'in üstünde değil ama karanlık tema bütünlüğü için) */
         body.dark-mode #home-screen .header-brand { 
             color: white; 
             text-shadow: 0 2px 10px rgba(0,0,0,0.3); 
         }
+        /* Light modda: BORDO (İstediğin Güncelleme) */
         body:not(.dark-mode) #home-screen .header-brand { 
-            color: var(--primary);
+            color: var(--primary); /* Koyu Bordo */
             text-shadow: none;
         }
 
@@ -204,7 +206,7 @@
         .auth-tabs { display: flex; background: rgba(128,128,128,0.2); border-radius: 12px; padding: 4px; margin-bottom: 20px; }
         .auth-tab { flex: 1; text-align: center; padding: 10px; font-size: 14px; font-weight: 600; border-radius: 10px; color: var(--text-sub); cursor: pointer; transition: all 0.2s; }
         .auth-tab.active { background: var(--bg-card); color: var(--text-main); box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
-        .auth-input, .profile-input { width: 100%; padding: 16px; margin-bottom: 12px; border-radius: 12px; border: 1px solid var(--border-color); background: var(--bg-card); color: var(--text-main); font-size: 15px; }
+        .auth-input { width: 100%; padding: 16px; margin-bottom: 12px; border-radius: 12px; border: 1px solid var(--border-color); background: var(--bg-card); color: var(--text-main); font-size: 15px; }
         .submit-btn { width: 100%; padding: 16px; border-radius: 14px; background: var(--primary); color: white; border: none; font-weight: 700; font-size: 16px; cursor: pointer; margin-top: 10px; box-shadow: 0 5px 15px rgba(139, 0, 0, 0.3); }
         .social-btn { width: 100%; padding: 14px; border-radius: 12px; display: flex; align-items: center; justify-content: center; gap: 10px; font-size: 14px; font-weight: 600; cursor: pointer; margin-bottom: 10px; border: 1px solid var(--border-color); background: var(--bg-card); color: var(--text-main); }
 
@@ -216,7 +218,6 @@
             background: var(--bg-card);
             border-top-left-radius: 24px; border-top-right-radius: 24px; padding: 24px; 
             transition: bottom 0.3s ease; border-top: 1px solid var(--border-color); color: var(--text-main);
-            max-height: 90vh; overflow-y: auto;
         }
         .action-sheet.open, .modal-sheet.open { bottom: 0; }
         .action-btn { width: 100%; padding: 16px; margin-bottom: 10px; border-radius: 14px; background: var(--bg-body); border: 1px solid var(--border-color); color: var(--text-main); font-size: 16px; font-weight: 600; cursor: pointer; display: flex; gap: 10px; justify-content: center; align-items: center;}
@@ -231,22 +232,6 @@
             border: 1px solid rgba(255, 59, 48, 0.2); font-weight: 600; cursor: pointer;
         }
 
-        /* Loading Spinner */
-        #loading-overlay {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0, 0, 0, 0.8); z-index: 300;
-            display: none; justify-content: center; align-items: center; flex-direction: column;
-        }
-        .spinner {
-            width: 50px; height: 50px; border: 5px solid var(--bg-card); border-top: 5px solid var(--gold);
-            border-radius: 50%; animation: spin 1s linear infinite; margin-bottom: 20px;
-        }
-        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-
-        /* Gemini Response Text */
-        #gemini-response p { margin-bottom: 10px; line-height: 1.5; font-size: 15px; }
-        #gemini-response strong { color: var(--gold); }
-
     </style>
 </head>
 <body class="dark-mode"> 
@@ -254,10 +239,6 @@
     <div id="app">
 
         <div id="overlay" class="modal-overlay" onclick="closeAllSheets()"></div>
-        <div id="loading-overlay">
-            <div class="spinner"></div>
-            <div style="color:white; font-weight:600;">Fincan yorumlanıyor...</div>
-        </div>
 
         <div id="auth-screen" class="screen">
             <div class="header">
@@ -279,6 +260,7 @@
                 </div>
 
                 <div id="form-register" class="hidden">
+                    <input type="text" id="reg-name" class="auth-input" placeholder="Ad Soyad">
                     <input type="email" id="reg-email" class="auth-input" placeholder="E-Posta">
                     <input type="password" id="reg-pass" class="auth-input" placeholder="Şifre Oluştur">
                     <button class="submit-btn" onclick="window.handleRegister()">Hesap Oluştur</button>
@@ -291,50 +273,8 @@
                 </div>
 
                 <div class="social-btn"><i class="fa-brands fa-google" style="color:#DB4437;"></i> Google ile devam et</div>
-            </div>
-        </div>
-
-        <div id="onboarding-screen" class="screen">
-            <div class="header">
-                <div class="header-brand">Tanışalım</div>
-            </div>
-            <div style="padding: 24px;">
-                <p style="color:var(--text-sub); margin-bottom:20px; text-align:center;">Daha iyi bir fal deneyimi için seni biraz tanıyalım.</p>
-                
-                <input type="text" id="ob-name" class="auth-input" placeholder="Adın Soyadın">
-                <input type="date" id="ob-dob" class="auth-input" placeholder="Doğum Tarihi">
-                <select id="ob-gender" class="auth-input">
-                    <option value="" disabled selected>Cinsiyetin</option>
-                    <option value="Kadın">Kadın</option>
-                    <option value="Erkek">Erkek</option>
-                    <option value="Diğer">Diğer</option>
-                </select>
-                <input type="text" id="ob-job" class="auth-input" placeholder="Mesleğin (Örn: Öğrenci, Mühendis)">
-                <select id="ob-relation" class="auth-input">
-                    <option value="" disabled selected>İlişki Durumu</option>
-                    <option value="İlişkisi Yok">İlişkisi Yok</option>
-                    <option value="İlişkisi Var">İlişkisi Var</option>
-                    <option value="Nişanlı">Nişanlı</option>
-                    <option value="Evli">Evli</option>
-                    <option value="Platonik">Platonik</option>
-                </select>
-                <select id="ob-zodiac" class="auth-input">
-                    <option value="" disabled selected>Burcun</option>
-                    <option value="Koç">Koç</option>
-                    <option value="Boğa">Boğa</option>
-                    <option value="İkizler">İkizler</option>
-                    <option value="Yengeç">Yengeç</option>
-                    <option value="Aslan">Aslan</option>
-                    <option value="Başak">Başak</option>
-                    <option value="Terazi">Terazi</option>
-                    <option value="Akrep">Akrep</option>
-                    <option value="Yay">Yay</option>
-                    <option value="Oğlak">Oğlak</option>
-                    <option value="Kova">Kova</option>
-                    <option value="Balık">Balık</option>
-                </select>
-
-                <button class="submit-btn" onclick="saveOnboardingData()">Kaydet ve Başla 🚀</button>
+                <div class="social-btn"><i class="fa-brands fa-apple" style="color:var(--text-main);"></i> Apple ile devam et</div>
+                <div class="social-btn"><i class="fa-brands fa-facebook" style="color:#1877F2;"></i> Facebook ile devam et</div>
             </div>
         </div>
 
@@ -423,13 +363,12 @@
             </div>
 
             <div class="menu-list">
-                <div class="menu-item hidden" id="my-account-btn" onclick="openModal('personal-info-modal')">
-                     <span><i class="fa-solid fa-id-card" style="margin-right:10px; color:var(--text-sub);"></i> Hesap Bilgilerim</span>
-                     <i class="fa-solid fa-chevron-right" style="font-size:12px; color:var(--text-sub);"></i>
-                </div>
-
                 <div class="menu-item" onclick="openModal('settings-modal')">
                     <span><i class="fa-solid fa-gear" style="margin-right:10px; color:var(--text-sub);"></i> Ayarlar</span>
+                    <i class="fa-solid fa-chevron-right" style="font-size:12px; color:var(--text-sub);"></i>
+                </div>
+                <div class="menu-item">
+                    <span><i class="fa-solid fa-bell" style="margin-right:10px; color:var(--text-sub);"></i> Bildirimler</span>
                     <i class="fa-solid fa-chevron-right" style="font-size:12px; color:var(--text-sub);"></i>
                 </div>
                 <div id="btn-logout-wrapper" class="menu-item hidden" style="color:#FF3B30; border-color:rgba(255,59,48,0.2);" onclick="window.logoutUser()">
@@ -451,87 +390,22 @@
                 <div class="theme-opt active-theme" onclick="setTheme('system', this)">Sistem</div>
             </div>
 
+            <div style="background:var(--bg-body); padding:15px; border-radius:12px; border:1px solid var(--border-color);">
+                <div style="display:flex; justify-content:space-between;">
+                    <span>Ses Efektleri</span> <i class="fa-solid fa-toggle-off" style="color:var(--text-sub); font-size:24px;"></i>
+                </div>
+            </div>
+
             <button class="delete-account-btn" onclick="window.handleDeleteAccount()">
                 Hesabımı Sil
             </button>
         </div>
 
-        <div id="personal-info-modal" class="modal-sheet">
-            <div class="header" style="padding:0; margin-bottom:20px; border:none; justify-content:space-between;">
-                <div style="font-weight:700;">Hesap Bilgilerim</div>
-                <div style="color:var(--primary); cursor:pointer;" onclick="closeAllSheets()">Kapat</div>
-            </div>
-            <p style="font-size:12px; color:var(--text-sub); margin-bottom:15px;">Bu bilgiler kalıcı olarak kaydedilir.</p>
-            
-            <input type="text" id="edit-name" class="profile-input" placeholder="Adın">
-            <input type="date" id="edit-dob" class="profile-input">
-            <input type="text" id="edit-job" class="profile-input" placeholder="Meslek">
-            <select id="edit-relation" class="profile-input">
-                <option value="İlişkisi Yok">İlişkisi Yok</option>
-                <option value="İlişkisi Var">İlişkisi Var</option>
-                <option value="Nişanlı">Nişanlı</option>
-                <option value="Evli">Evli</option>
-                <option value="Platonik">Platonik</option>
-            </select>
-             <select id="edit-zodiac" class="profile-input">
-                <option value="Koç">Koç</option>
-                <option value="Boğa">Boğa</option>
-                <option value="İkizler">İkizler</option>
-                <option value="Yengeç">Yengeç</option>
-                <option value="Aslan">Aslan</option>
-                <option value="Başak">Başak</option>
-                <option value="Terazi">Terazi</option>
-                <option value="Akrep">Akrep</option>
-                <option value="Yay">Yay</option>
-                <option value="Oğlak">Oğlak</option>
-                <option value="Kova">Kova</option>
-                <option value="Balık">Balık</option>
-            </select>
-            <button class="submit-btn" onclick="updateProfileData()">Güncelle</button>
-        </div>
-
         <div id="photo-options-sheet" class="action-sheet">
             <h3 style="text-align:center; margin-bottom:20px; font-size:16px;">Fal Gönder</h3>
-            <input type="file" id="file-input" accept="image/*" style="display:none;" onchange="handleFileSelect(event)">
-            
-            <button class="action-btn" onclick="triggerFileInput('camera')"><i class="fa-solid fa-camera"></i> Fotoğraf Çek</button>
-            <button class="action-btn" onclick="triggerFileInput('gallery')"><i class="fa-solid fa-image"></i> Galeriden Seç</button>
+            <button class="action-btn" onclick="alert('Kamera')"><i class="fa-solid fa-camera"></i> Fotoğraf Çek</button>
+            <button class="action-btn" onclick="alert('Galeri')"><i class="fa-solid fa-image"></i> Galeriden Seç</button>
             <button class="action-btn" style="color:#FF3B30; background:rgba(255,59,48,0.1);" onclick="closeAllSheets()">Vazgeç</button>
-        </div>
-
-        <div id="fortune-prep-modal" class="modal-sheet">
-             <div class="header" style="padding:0; margin-bottom:10px; border:none; justify-content:space-between;">
-                <div style="font-weight:700;">Bilgilerini Kontrol Et</div>
-                <div style="color:var(--text-sub); cursor:pointer;" onclick="closeAllSheets()">Vazgeç</div>
-            </div>
-            <p style="font-size:13px; color:var(--text-sub); margin-bottom:20px;">
-                Bu fal için niyetin veya durumun farklıysa buradan değiştirebilirsin (Kalıcı olarak değişmez).
-            </p>
-
-            <div style="background:var(--bg-body); padding:10px; border-radius:12px; margin-bottom:15px; text-align:center;">
-                <img id="preview-img" src="" style="max-height:150px; border-radius:8px; border:2px solid var(--gold);">
-            </div>
-
-            <input type="text" id="temp-name" class="profile-input" placeholder="Adın">
-            <select id="temp-relation" class="profile-input">
-                <option value="İlişkisi Yok">İlişkisi Yok</option>
-                <option value="İlişkisi Var">İlişkisi Var</option>
-                <option value="Nişanlı">Nişanlı</option>
-                <option value="Evli">Evli</option>
-                <option value="Platonik">Platonik</option>
-            </select>
-            <input type="text" id="temp-job" class="profile-input" placeholder="Meslek">
-            
-            <button class="submit-btn" onclick="sendFortuneToGemini()">Falı Gönder ✨</button>
-        </div>
-
-        <div id="fortune-result-modal" class="modal-sheet" style="height:90%;">
-             <div class="header" style="padding:0; margin-bottom:15px; border:none; justify-content:space-between;">
-                <div style="font-weight:700; color:var(--gold);"><i class="fa-solid fa-star"></i> Falın Hazır</div>
-                <div style="color:var(--text-main); cursor:pointer;" onclick="closeAllSheets()">Kapat</div>
-            </div>
-            <div id="gemini-response" style="color:var(--text-main); padding-bottom:40px;">
-                </div>
         </div>
 
         <div class="bottom-nav">
@@ -549,334 +423,167 @@
     </div>
 
     <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-        import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, onAuthStateChanged, signOut, deleteUser } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-        import { getFirestore, doc, setDoc, getDoc, updateDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+import {
+  getAuth,
+  signInWithEmailAndPassword,
+  createUserWithEmailAndPassword,
+  onAuthStateChanged,
+  signOut,
+  deleteUser
+} from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+import {
+  getFirestore,
+  doc,
+  getDoc,
+  setDoc,
+  updateDoc
+} from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
-        const firebaseConfig = {
-          apiKey: "AIzaSyDVV5cLOkjaJ3k-FUwqRE4LucN293RPBbM",
-          authDomain: "kahvelabweb.firebaseapp.com",
-          projectId: "kahvelabweb",
-          storageBucket: "kahvelabweb.firebasestorage.app",
-          messagingSenderId: "754884541831",
-          appId: "1:754884541831:web:4a4cf4046a31b269ea2722"
-        };
+/* ---------------- CONFIG ---------------- */
+const GEMINI_API_KEY = "AIzaSyCjSBmLJsOOb-uG9SRPt2c8cA5cAu1sfdE";
 
-        const app = initializeApp(firebaseConfig);
-        const auth = getAuth(app);
-        const db = getFirestore(app);
+const firebaseConfig = {
+  apiKey: "AIzaSyDVV5cLOkjaJ3k-FUwqRE4LucN293RPBbM",
+  authDomain: "kahvelabweb.firebaseapp.com",
+  projectId: "kahvelabweb",
+  storageBucket: "kahvelabweb.firebasestorage.app",
+  messagingSenderId: "754884541831",
+  appId: "1:754884541831:web:4a4cf4046a31b269ea2722"
+};
 
-        // --- GEMINI API SETUP ---
-        const GEMINI_API_KEY = "AIzaSyCjSBmLJsOOb-uG9SRPt2c8cA5cAu1sfdE";
-        let currentBase64Image = "";
+/* ---------------- INIT ---------------- */
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getFirestore(app);
 
-        // --- AUTH ---
-        window.switchAuthTab = function(tab) {
-            document.querySelectorAll('.auth-tab').forEach(t => t.classList.remove('active'));
-            document.getElementById('tab-' + tab).classList.add('active');
-            
-            if(tab === 'login') {
-                document.getElementById('form-login').classList.remove('hidden');
-                document.getElementById('form-register').classList.add('hidden');
-                document.getElementById('auth-title').innerText = "Giriş Yap";
-            } else {
-                document.getElementById('form-login').classList.add('hidden');
-                document.getElementById('form-register').classList.remove('hidden');
-                document.getElementById('auth-title').innerText = "Kayıt Ol";
+/* ---------------- AUTH ---------------- */
+window.handleLogin = async () => {
+  await signInWithEmailAndPassword(
+    auth,
+    login-email.value,
+    login-pass.value
+  );
+};
+
+window.handleRegister = async () => {
+  const res = await createUserWithEmailAndPassword(
+    auth,
+    reg-email.value,
+    reg-pass.value
+  );
+
+  await setDoc(doc(db, "users", res.user.uid), {
+    email: res.user.email,
+    createdAt: Date.now(),
+    profileCompleted: false
+  });
+};
+
+/* ---------------- ONBOARDING CHECK ---------------- */
+async function checkProfile(uid) {
+  const snap = await getDoc(doc(db, "users", uid));
+  return snap.exists() && snap.data().profileCompleted;
+}
+
+/* ---------------- AUTH STATE ---------------- */
+onAuthStateChanged(auth, async (user) => {
+  if (!user) return;
+
+  const completed = await checkProfile(user.uid);
+
+  if (!completed) {
+    openOnboarding();
+  } else {
+    navTo("home-screen");
+  }
+});
+
+/* ---------------- ONBOARDING ---------------- */
+window.openOnboarding = () => {
+  const html = `
+    <div class="modal-sheet open" id="onboarding">
+      <h3>Biraz Seni Tanıyalım</h3>
+      <input id="ob-birth" class="auth-input" placeholder="Doğum Tarihi">
+      <input id="ob-gender" class="auth-input" placeholder="Cinsiyet">
+      <input id="ob-zodiac" class="auth-input" placeholder="Burç">
+      <input id="ob-job" class="auth-input" placeholder="Meslek">
+      <button class="submit-btn" onclick="saveOnboarding()">Devam</button>
+    </div>`;
+  document.body.insertAdjacentHTML("beforeend", html);
+};
+
+window.saveOnboarding = async () => {
+  const uid = auth.currentUser.uid;
+  await updateDoc(doc(db, "users", uid), {
+    birthDate: ob-birth.value,
+    gender: ob-gender.value,
+    zodiac: ob-zodiac.value,
+    job: ob-job.value,
+    profileCompleted: true
+  });
+  document.getElementById("onboarding").remove();
+  navTo("home-screen");
+};
+
+/* ---------------- BASE64 ---------------- */
+function fileToBase64(file) {
+  return new Promise((resolve) => {
+    const r = new FileReader();
+    r.onload = () => resolve(r.result.split(",")[1]);
+    r.readAsDataURL(file);
+  });
+}
+
+/* ---------------- GEMINI ---------------- */
+async function callGemini(base64, profile) {
+  const res = await fetch(
+    `https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent?key=${GEMINI_API_KEY}`,
+    {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        contents: [{
+          parts: [
+            { text: `Bu kahve falını yorumla. Kullanıcı bilgileri: ${JSON.stringify(profile)}` },
+            {
+              inlineData: {
+                mimeType: "image/jpeg",
+                data: base64
+              }
             }
-        }
+          ]
+        }]
+      })
+    }
+  );
+  const data = await res.json();
+  alert(data.candidates[0].content.parts[0].text);
+}
 
-        window.handleLogin = async function() {
-            const email = document.getElementById('login-email').value;
-            const pass = document.getElementById('login-pass').value;
-            try { await signInWithEmailAndPassword(auth, email, pass); } 
-            catch (error) { alert("Giriş Hatası: " + error.message); }
-        }
+/* ---------------- FAL GÖNDER ---------------- */
+window.handleFalPhoto = async (file) => {
+  const base64 = await fileToBase64(file);
+  const snap = await getDoc(doc(db, "users", auth.currentUser.uid));
+  const profile = snap.data();
 
-        window.handleRegister = async function() {
-            const email = document.getElementById('reg-email').value;
-            const pass = document.getElementById('reg-pass').value;
-            if(!email || !pass) { alert("Lütfen alanları doldurun."); return; }
-            try { 
-                await createUserWithEmailAndPassword(auth, email, pass); 
-                // Kayıt başarılı olduğunda onAuthStateChanged tetiklenecek
-            } catch (error) { alert("Kayıt Hatası: " + error.message); }
-        }
+  const confirmSend = confirm(
+    `Bilgiler:\n${profile.gender} - ${profile.zodiac}\nGöndermek istiyor musun?`
+  );
 
-        window.logoutUser = async function() {
-            try { await signOut(auth); window.navTo('auth-screen'); } catch(e) { console.log(e); }
-        }
+  if (confirmSend) {
+    callGemini(base64, profile);
+  }
+};
 
-        window.handleDeleteAccount = async function() {
-            const user = auth.currentUser;
-            if(!user) return;
-            const confirmation = confirm("Hesabınızı kalıcı olarak silmek istediğinize emin misiniz?");
-            if(confirmation) {
-                try {
-                    await deleteUser(user);
-                    alert("Hesabınız silindi.");
-                    window.closeAllSheets();
-                } catch(error) {
-                    alert("Güvenlik gereği yeniden giriş yapmalısınız.");
-                    await signOut(auth);
-                }
-            }
-        }
+/* ---------------- UI HELP/jobs ---------------- */
+window.navTo = (id) => {
+  document.querySelectorAll(".screen").forEach(s => s.classList.remove("active"));
+  document.getElementById(id).classList.add("active");
+};
 
-        // --- MAIN USER FLOW ---
-        onAuthStateChanged(auth, async (user) => {
-            if (user) {
-                // Kullanıcı giriş yaptı, profil verisini çek
-                const docRef = doc(db, "users", user.uid);
-                const docSnap = await getDoc(docRef);
+window.logoutUser = async () => signOut(auth);
 
-                if (docSnap.exists()) {
-                    // Profil var -> Ana Sayfaya
-                    const data = docSnap.data();
-                    document.getElementById('profile-name').innerText = data.name || user.email.split('@')[0];
-                    setupLoggedInUI(user);
-                    window.navTo('home-screen');
-                } else {
-                    // Profil yok -> Onboarding Ekranına
-                    window.navTo('onboarding-screen');
-                }
-            } else {
-                setupGuestUI();
-            }
-        });
-
-        function setupLoggedInUI(user) {
-            document.getElementById('summary-content').style.filter = 'none';
-            document.getElementById('lock-overlay').style.display = 'none';
-            document.getElementById('guest-actions').classList.add('hidden');
-            document.getElementById('premium-area').classList.remove('hidden');
-            document.getElementById('btn-logout-wrapper').classList.remove('hidden');
-            document.getElementById('my-account-btn').classList.remove('hidden'); // Hesap bilgilerim butonu
-
-            if(user.email === 'volkan@litre.com') {
-                document.querySelector('.premium-btn').innerText = "Premium Üye Aktif";
-                document.querySelector('.premium-btn').style.background = "#4cd964";
-            }
-        }
-
-        function setupGuestUI() {
-            document.getElementById('profile-name').innerText = "Misafir Kullanıcı";
-            document.getElementById('guest-actions').classList.remove('hidden');
-            document.getElementById('premium-area').classList.add('hidden');
-            document.getElementById('btn-logout-wrapper').classList.add('hidden');
-            document.getElementById('my-account-btn').classList.add('hidden');
-            document.getElementById('summary-content').style.filter = 'blur(6px)';
-            document.getElementById('lock-overlay').style.display = 'flex';
-        }
-
-        // --- FIRESTORE OPERATIONS ---
-        
-        // 1. Onboarding Kaydı
-        window.saveOnboardingData = async function() {
-            const user = auth.currentUser;
-            if(!user) return;
-
-            const name = document.getElementById('ob-name').value;
-            const dob = document.getElementById('ob-dob').value;
-            const gender = document.getElementById('ob-gender').value;
-            const job = document.getElementById('ob-job').value;
-            const relation = document.getElementById('ob-relation').value;
-            const zodiac = document.getElementById('ob-zodiac').value;
-
-            if(!name || !gender) { alert("Lütfen en azından İsim ve Cinsiyet alanlarını doldur."); return; }
-
-            const userData = {
-                name: name, dob: dob, gender: gender, job: job, 
-                relation: relation, zodiac: zodiac, email: user.email,
-                credits: 3
-            };
-
-            try {
-                await setDoc(doc(db, "users", user.uid), userData);
-                document.getElementById('profile-name').innerText = name;
-                setupLoggedInUI(user);
-                window.navTo('home-screen');
-            } catch (e) {
-                console.error(e);
-                alert("Kaydederken hata oluştu.");
-            }
-        }
-
-        // 2. Profil Güncelleme (Hesap Bilgilerim)
-        // Modal açıldığında verileri doldur
-        window.openModal = async function(id) {
-            document.getElementById('overlay').classList.add('open');
-            document.getElementById(id).classList.add('open');
-
-            if(id === 'personal-info-modal') {
-                const user = auth.currentUser;
-                if(user) {
-                    const docSnap = await getDoc(doc(db, "users", user.uid));
-                    if(docSnap.exists()) {
-                        const data = docSnap.data();
-                        document.getElementById('edit-name').value = data.name || "";
-                        document.getElementById('edit-dob').value = data.dob || "";
-                        document.getElementById('edit-job').value = data.job || "";
-                        document.getElementById('edit-relation').value = data.relation || "";
-                        document.getElementById('edit-zodiac').value = data.zodiac || "";
-                    }
-                }
-            }
-        }
-
-        window.updateProfileData = async function() {
-            const user = auth.currentUser;
-            if(!user) return;
-            
-            const newData = {
-                name: document.getElementById('edit-name').value,
-                dob: document.getElementById('edit-dob').value,
-                job: document.getElementById('edit-job').value,
-                relation: document.getElementById('edit-relation').value,
-                zodiac: document.getElementById('edit-zodiac').value
-            };
-
-            try {
-                await updateDoc(doc(db, "users", user.uid), newData);
-                alert("Bilgilerin güncellendi!");
-                document.getElementById('profile-name').innerText = newData.name;
-                closeAllSheets();
-            } catch(e) { alert("Hata: " + e.message); }
-        }
-
-        // --- PHOTO & GEMINI FLOW ---
-
-        window.openPhotoOptions = function() {
-            if(!auth.currentUser) { alert("Fal göndermek için giriş yapmalısın!"); window.navTo('auth-screen'); return; }
-            document.getElementById('overlay').classList.add('open');
-            document.getElementById('photo-options-sheet').classList.add('open');
-        }
-
-        window.triggerFileInput = function(source) {
-            const fileInput = document.getElementById('file-input');
-            if(source === 'camera') {
-                fileInput.setAttribute('capture', 'environment');
-            } else {
-                fileInput.removeAttribute('capture');
-            }
-            fileInput.click();
-        }
-
-        window.handleFileSelect = function(event) {
-            const file = event.target.files[0];
-            if(file) {
-                const reader = new FileReader();
-                reader.onload = function(e) {
-                    // Base64 stringini al (data:image/jpeg;base64, kısmını ayıklayacağız sonra)
-                    const fullBase64 = e.target.result;
-                    currentBase64Image = fullBase64; 
-                    
-                    // Önizleme ve Prep Modalını Aç
-                    document.getElementById('preview-img').src = fullBase64;
-                    prepareFortuneModal();
-                };
-                reader.readAsDataURL(file);
-            }
-            closeAllSheets(); // Fotoğraf seçme menüsünü kapat
-        }
-
-        async function prepareFortuneModal() {
-            const user = auth.currentUser;
-            const docSnap = await getDoc(doc(db, "users", user.uid));
-            if(docSnap.exists()) {
-                const data = docSnap.data();
-                // Veritabanındaki verileri "geçici" alanlara doldur
-                document.getElementById('temp-name').value = data.name || "";
-                document.getElementById('temp-relation').value = data.relation || "";
-                document.getElementById('temp-job').value = data.job || "";
-            }
-            // Prep modalı aç
-            document.getElementById('overlay').classList.add('open');
-            document.getElementById('fortune-prep-modal').classList.add('open');
-        }
-
-        window.sendFortuneToGemini = async function() {
-            // Modal kapat, loading aç
-            document.getElementById('fortune-prep-modal').classList.remove('open');
-            document.getElementById('loading-overlay').style.display = 'flex';
-
-            // Geçici verileri al
-            const tempName = document.getElementById('temp-name').value;
-            const tempRelation = document.getElementById('temp-relation').value;
-            const tempJob = document.getElementById('temp-job').value;
-            
-            // Base64 header'ı temizle (Gemini API raw base64 ister)
-            const base64Data = currentBase64Image.split(',')[1];
-            const mimeType = currentBase64Image.split(';')[0].split(':')[1];
-
-            // Prompt Hazırla
-            const promptText = `
-                Sen mistik ve eğlenceli bir kahve falı yorumcususun. Kullanıcı adı: ${tempName}. 
-                İlişki durumu: ${tempRelation}. Mesleği: ${tempJob}.
-                Bu kahve fincanı fotoğrafına bak ve ona özel, samimi, esprili ve geleceğe dair umut veren bir yorum yap. 
-                İlişki ve iş hayatına değin. Markdown formatında yaz.
-            `;
-
-            const requestBody = {
-                contents: [{
-                    parts: [
-                        { text: promptText },
-                        { inline_data: { mime_type: mimeType, data: base64Data } }
-                    ]
-                }]
-            };
-
-            try {
-                const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_API_KEY}`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(requestBody)
-                });
-
-                const data = await response.json();
-                const text = data.candidates[0].content.parts[0].text;
-
-                // Sonucu Göster
-                document.getElementById('loading-overlay').style.display = 'none';
-                document.getElementById('gemini-response').innerHTML = marked.parse(text); // Markdown render
-                document.getElementById('fortune-result-modal').classList.add('open');
-                document.getElementById('overlay').classList.add('open');
-
-            } catch (error) {
-                document.getElementById('loading-overlay').style.display = 'none';
-                alert("Falcı şu an müsait değil :( Hata: " + error.message);
-                closeAllSheets();
-            }
-        }
-
-        // --- UTILS ---
-        window.navTo = function(screenId, navEl) {
-            document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
-            document.getElementById(screenId).classList.add('active');
-            
-            if(navEl) {
-                document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
-                navEl.classList.add('active');
-            }
-        }
-        
-        window.setTheme = function(mode, el) {
-            document.querySelectorAll('.theme-opt').forEach(t => t.classList.remove('active-theme'));
-            el.classList.add('active-theme');
-            const body = document.body;
-            if(mode === 'dark') body.classList.add('dark-mode');
-            else if (mode === 'light') body.classList.remove('dark-mode');
-            else {
-                if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) body.classList.add('dark-mode');
-                else body.classList.remove('dark-mode');
-            }
-        }
-
-        window.closeAllSheets = function() {
-            document.getElementById('overlay').classList.remove('open');
-            document.querySelectorAll('.action-sheet, .modal-sheet').forEach(s => s.classList.remove('open'));
-        }
-
-    </script>
+</script>
 </body>
 </html>

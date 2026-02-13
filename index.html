@@ -50,7 +50,7 @@
             overflow-y: hidden; padding-bottom: var(--nav-height);
             background: var(--bg-body); animation: fadeIn 0.4s ease;
         }
-        #fortunes-screen, #profile-screen, #auth-screen, #onboarding-screen, #account-info-screen { overflow-y: auto; }
+        #fortunes-screen, #profile-screen, #auth-screen, #onboarding-screen, #account-info-screen, #subscription-screen { overflow-y: auto; }
 
         .screen.active { display: flex; }
         @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
@@ -148,17 +148,54 @@
             box-shadow: 0 2px 8px rgba(0,0,0,0.03);
         }
         
+        /* Updated Premium Card Style (More subtle for Profile) */
         .premium-card-v2 {
             margin: 0 24px; background: linear-gradient(135deg, #1C1C1E 0%, #000000 100%);
-            border-radius: 20px; padding: 24px; position: relative; overflow: hidden;
+            border-radius: 20px; padding: 20px; position: relative; overflow: hidden;
             border: 1px solid rgba(255, 215, 0, 0.3); box-shadow: 0 10px 30px rgba(0,0,0,0.2);
-            margin-top: -20px; margin-bottom: 20px;
+            margin-top: -20px; margin-bottom: 20px; cursor: pointer;
         }
         .premium-btn {
             background: linear-gradient(90deg, #FFD700, #FDB931); color: black; border: none; 
             padding: 14px; width: 100%; border-radius: 12px; font-weight: 700; margin-top: 15px; cursor: pointer;
         }
-        .premium-feature-list li { color: #ddd; font-size: 13px; margin-bottom: 8px; display: flex; gap: 10px; }
+        
+        /* SUBSCRIPTION PAGE STYLES */
+        .sub-hero {
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            padding: 20px; margin-bottom: 20px;
+        }
+        .sub-icon { font-size: 48px; color: var(--gold); margin-bottom: 15px; filter: drop-shadow(0 0 10px rgba(212, 175, 55, 0.5)); }
+        .sub-title { font-size: 24px; font-weight: 800; color: var(--text-main); margin-bottom: 10px; text-align: center; }
+        .sub-desc { font-size: 14px; color: var(--text-sub); text-align: center; max-width: 80%; line-height: 1.5; }
+        
+        .sub-features { padding: 0 24px; margin-bottom: 30px; }
+        .sub-feature-item { 
+            display: flex; align-items: center; margin-bottom: 15px; 
+            background: rgba(128,128,128,0.1); padding: 12px; border-radius: 12px;
+        }
+        .sub-feature-icon { 
+            width: 32px; height: 32px; background: rgba(212, 175, 55, 0.2); border-radius: 50%; 
+            display: flex; align-items: center; justify-content: center; margin-right: 15px;
+            color: var(--gold); font-size: 14px;
+        }
+        .sub-feature-text { flex: 1; font-size: 14px; color: var(--text-main); font-weight: 500; }
+
+        .sub-plans { display: flex; gap: 15px; padding: 0 24px; margin-bottom: 30px; }
+        .sub-plan-card {
+            flex: 1; background: var(--bg-card); border: 2px solid var(--border-color);
+            border-radius: 16px; padding: 15px; text-align: center; cursor: pointer;
+            position: relative; transition: all 0.2s;
+        }
+        .sub-plan-card.selected { border-color: var(--gold); background: rgba(212, 175, 55, 0.05); }
+        .best-value-badge {
+            position: absolute; top: -10px; left: 50%; transform: translateX(-50%);
+            background: var(--gold); color: black; font-size: 10px; font-weight: 700;
+            padding: 4px 10px; border-radius: 20px; text-transform: uppercase;
+        }
+        .plan-duration { font-size: 13px; color: var(--text-sub); margin-bottom: 5px; font-weight: 600; }
+        .plan-price { font-size: 18px; font-weight: 800; color: var(--text-main); }
+        .plan-per-month { font-size: 11px; color: var(--text-sub); margin-top: 5px; }
 
         .auth-tabs { display: flex; background: rgba(128,128,128,0.2); border-radius: 12px; padding: 4px; margin-bottom: 20px; }
         .auth-tab { flex: 1; text-align: center; padding: 10px; font-size: 14px; font-weight: 600; border-radius: 10px; color: var(--text-sub); cursor: pointer; transition: all 0.2s; }
@@ -363,6 +400,59 @@
                 <div style="padding:20px; text-align:center;">Henüz Falın Yok</div>
             </div>
         </div>
+        
+        <div id="subscription-screen" class="screen">
+            <div class="header">
+                <div onclick="navTo('profile-screen')" style="font-size:24px; color:var(--text-main); cursor:pointer;"><i class="fa-solid fa-arrow-left"></i></div>
+                <div class="header-title">Premium</div>
+            </div>
+            
+            <div class="sub-hero">
+                <i class="fa-solid fa-crown sub-icon"></i>
+                <div class="sub-title">KahveLab Premium'a Geç</div>
+                <div class="sub-desc">Sınırsız fal ve yapay zeka destekli derin analizlerle geleceğine ışık tut.</div>
+            </div>
+
+            <div class="sub-features">
+                <div class="sub-feature-item">
+                    <div class="sub-feature-icon"><i class="fa-solid fa-bolt"></i></div>
+                    <div class="sub-feature-text">Sınırsız Fal Gönderme Hakkı</div>
+                </div>
+                <div class="sub-feature-item">
+                    <div class="sub-feature-icon"><i class="fa-solid fa-comments"></i></div>
+                    <div class="sub-feature-text">Falcıya Özel Soru Sorabilme</div>
+                </div>
+                <div class="sub-feature-item">
+                    <div class="sub-feature-icon"><i class="fa-solid fa-heart"></i></div>
+                    <div class="sub-feature-text">Detaylı İlişki ve Aşk Analizi</div>
+                </div>
+                <div class="sub-feature-item">
+                    <div class="sub-feature-icon"><i class="fa-solid fa-star"></i></div>
+                    <div class="sub-feature-text">Gelecek Öngörüleri ve Tavsiyeler</div>
+                </div>
+            </div>
+
+            <div class="sub-plans">
+                <div class="sub-plan-card" onclick="selectPlan('monthly', this)">
+                    <div class="plan-duration">AYLIK</div>
+                    <div class="plan-price">₺99</div>
+                    <div class="plan-per-month">/ay</div>
+                </div>
+                <div class="sub-plan-card selected" onclick="selectPlan('yearly', this)">
+                    <div class="best-value-badge">EN İYİ</div>
+                    <div class="plan-duration">YILLIK</div>
+                    <div class="plan-price">₺899</div>
+                    <div class="plan-per-month">₺75 /ay</div>
+                </div>
+            </div>
+
+            <div style="padding: 0 24px;">
+                <button class="submit-btn" style="background: linear-gradient(90deg, #FFD700, #FDB931); color: black;" onclick="checkPremiumAccess()">Premium Abone Ol</button>
+                <div style="text-align:center; margin-top:15px; font-size:11px; color:var(--text-sub);">
+                    Abonelik istediğin zaman iptal edilebilir. Kullanım koşulları geçerlidir.
+                </div>
+            </div>
+        </div>
 
         <div id="profile-screen" class="screen">
             <div class="header"><div class="header-title">Hesabım</div></div>
@@ -377,16 +467,12 @@
             </div>
 
             <div id="premium-area" class="hidden">
-                <div class="premium-card-v2">
+                <div class="premium-card-v2" onclick="navTo('subscription-screen')">
                     <div style="display:flex; justify-content:space-between; align-items:center;">
                         <h3 style="color:white; font-size:18px;">KahveLab <span style="color:var(--gold)">Premium</span></h3>
-                        <i class="fa-solid fa-crown" style="color:var(--gold); font-size:22px;"></i>
+                        <i class="fa-solid fa-chevron-right" style="color:var(--text-sub); font-size:16px;"></i>
                     </div>
-                    <ul class="premium-feature-list" style="margin-top:15px; list-style:none;">
-                        <li><i class="fa-solid fa-check" style="color:var(--gold)"></i> Falcıya 1 Soru Hakkı</li>
-                        <li><i class="fa-solid fa-check" style="color:var(--gold)"></i> Detaylı İlişki Analizi</li>
-                    </ul>
-                    <button id="btn-upgrade" class="premium-btn" onclick="openModal('payment-modal')">Premium'a Geç ₺99/ay</button>
+                    <p style="color:#bbb; font-size:13px; margin-top:5px;">Özellikleri keşfetmek için tıkla</p>
                 </div>
             </div>
 
@@ -431,7 +517,7 @@
            <div style="text-align:center; padding:20px;">
                <i class="fa-brands fa-cc-visa" style="font-size:40px; color:var(--text-main); margin-right:10px;"></i>
                <i class="fa-brands fa-cc-mastercard" style="font-size:40px; color:var(--text-main);"></i>
-               <p style="margin-top:20px; color:var(--text-sub);">Ödeme Simülasyonu</p>
+               <p style="margin-top:20px; color:var(--text-sub);">Ödeme Simülasyonu (Test)</p>
                <h3 style="margin:10px 0; font-size:24px;">₺99.00 / Ay</h3>
                <button class="submit-btn" style="background:#4cd964; box-shadow:none;" onclick="upgradeToPremium()">Ödemeyi Tamamla</button>
            </div>
@@ -508,7 +594,7 @@
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
         import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, onAuthStateChanged, signOut, deleteUser } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-        import { getFirestore, doc, setDoc, getDoc, updateDoc, collection, addDoc, getDocs, orderBy, query, enableIndexedDbPersistence } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+        import { getFirestore, doc, setDoc, getDoc, updateDoc, collection, addDoc, getDocs, orderBy, query, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
         const firebaseConfig = {
           apiKey: "AIzaSyDVV5cLOkjaJ3k-FUwqRE4LucN293RPBbM",
@@ -525,16 +611,14 @@
 
         const GEMINI_API_KEY = "AIzaSyCjSBmLJsOOb-uG9SRPt2c8cA5cAu1sfdE";
 
-        let uploadedImages = []; // Stores 3 images
+        let uploadedImages = []; 
         let isUserPremium = false;
 
-        // HELPER: Capitalize Name
         function capitalizeWords(str) {
             if(!str) return "";
             return str.replace(/\b\w/g, l => l.toUpperCase());
         }
 
-        // HELPER: Resize Image (Client Side Compression)
         function resizeImage(file) {
             return new Promise((resolve) => {
                 const reader = new FileReader();
@@ -558,7 +642,6 @@
                         canvas.height = height;
                         const ctx = canvas.getContext('2d');
                         ctx.drawImage(img, 0, 0, width, height);
-                        // Returns Data URL (Base64)
                         resolve(canvas.toDataURL('image/jpeg', 0.7)); 
                     };
                 };
@@ -615,7 +698,6 @@
         }
 
         // --- FIRESTORE USER PROFILE ---
-        // GÜNCELLEME: İsim senkronizasyonu ve sonsuz yükleme düzeltildi
         window.saveUserProfile = async function(isOnboarding) {
             const user = auth.currentUser;
             if(!user) {
@@ -625,12 +707,12 @@
             }
 
             const prefix = isOnboarding ? 'ob-' : 'edit-';
-            const rawName = document.getElementById(prefix + 'name').value;
+            const rawName = document.getElementById(prefix + 'name').value || "";
             const name = capitalizeWords(rawName);
-            const birthdate = document.getElementById(prefix + 'birthdate').value;
-            const gender = document.getElementById(prefix + 'gender').value;
-            const status = document.getElementById(prefix + 'status').value;
-            const job = document.getElementById(prefix + 'job').value;
+            const birthdate = document.getElementById(prefix + 'birthdate').value || "";
+            const gender = document.getElementById(prefix + 'gender').value || "Belirtilmemiş";
+            const status = document.getElementById(prefix + 'status').value || "Belirtilmemiş";
+            const job = document.getElementById(prefix + 'job').value || "";
 
             if(isOnboarding && (!name || !birthdate || !gender)) {
                 alert("Lütfen temel bilgileri doldurun.");
@@ -638,43 +720,60 @@
             }
 
             const userData = {
-                name: name, birthdate: birthdate, gender: gender, status: status, job: job, updatedAt: new Date()
+                name: name,
+                birthdate: birthdate,
+                gender: gender,
+                status: status,
+                job: job,
+                email: user.email, 
+                updatedAt: new Date().toISOString() 
             };
 
-            // Loading aç
             document.getElementById('loading-overlay').style.display = 'flex';
 
             try {
-                // Zaman aşımı (Timeout) mekanizması ekliyorum. 
-                // 10 saniye içinde cevap gelmezse hata verip kapatacak.
                 const timeout = new Promise((_, reject) => 
-                    setTimeout(() => reject(new Error("Bağlantı zaman aşımına uğradı. İnternetini kontrol et.")), 10000)
+                    setTimeout(() => reject(new Error("Firebase yanıt vermiyor.")), 10000)
                 );
 
-                // Race: Hangisi önce biterse onu kabul et.
                 await Promise.race([
                     setDoc(doc(db, "users", user.uid), userData, { merge: true }),
                     timeout
                 ]);
                 
-                // Başarılı ise arayüzü güncelle
-                // Sadece Firestore'a güvenme, localdeki veriyi de ekrana yaz.
                 document.getElementById('profile-name').innerText = name || capitalizeWords(user.email.split('@')[0]);
                 document.getElementById('edit-name').value = name; 
 
                 if(isOnboarding) {
                     window.navTo('home-screen');
                 } else {
-                    alert("Bilgiler güncellendi!");
+                    alert("Bilgiler başarıyla güncellendi!");
                     window.navTo('profile-screen');
                 }
 
             } catch(e) { 
-                console.error(e);
-                alert("Hata: " + e.message); 
+                console.error("Firebase Hatası:", e);
+                alert("Hata Oluştu: " + e.message); 
             } finally {
-                // NE OLURSA OLSUN YÜKLENİYOR EKRANINI KAPAT
                 document.getElementById('loading-overlay').style.display = 'none';
+            }
+        }
+
+        // YENİ: PREMIUM KONTROL VE SATIN ALMA SİMÜLASYONU
+        window.selectPlan = function(plan, el) {
+            document.querySelectorAll('.sub-plan-card').forEach(c => c.classList.remove('selected'));
+            el.classList.add('selected');
+        }
+
+        window.checkPremiumAccess = function() {
+            const user = auth.currentUser;
+            if(!user) return;
+
+            // Sadece senin test hesabın için simülasyonu aç
+            if(user.email === "volkan@litre.com") {
+                window.openModal('payment-modal');
+            } else {
+                alert("KahveLab Premium çok yakında tüm kullanıcılar için aktif olacak! İlgin için teşekkürler.");
             }
         }
 
@@ -686,6 +785,8 @@
                  await setDoc(doc(db, "users", user.uid), { isPremium: true }, { merge: true });
                  document.getElementById('loading-overlay').style.display = 'none';
                  closeAllSheets();
+                 // Başarılı olunca profil sayfasına at ki durumu görsün
+                 window.navTo('profile-screen');
                  alert("Tebrikler! Artık Premium Üyesin.");
                  isUserPremium = true;
                  updatePremiumUI(true);
@@ -693,68 +794,69 @@
         }
 
         function updatePremiumUI(isPrem) {
-             const btn = document.getElementById('btn-upgrade');
+             const btn = document.getElementById('btn-upgrade'); // Eski buton (artık kullanılmıyor ama kodda kalsın)
              const qInput = document.getElementById('premium-question');
+             const premArea = document.getElementById('premium-area');
+
              if(isPrem) {
-                 btn.innerText = "Premium Üye Aktif";
-                 btn.style.background = "#4cd964";
-                 btn.style.color = "white";
-                 btn.onclick = null; 
+                 if(btn) btn.style.display = 'none';
+                 
+                 // Premium kullanıcı kartı gizleyebilir veya "Aktif" gösterebiliriz.
+                 // Şimdilik gizleyelim, çünkü zaten satın aldı.
+                 if(premArea) premArea.classList.add('hidden');
+
                  qInput.disabled = false;
                  qInput.placeholder = "Özel sorunu buraya yaz...";
                  qInput.classList.remove('locked-input');
                  qInput.onclick = null;
              } else {
-                 btn.innerText = "Premium'a Geç ₺99/ay";
-                 btn.onclick = () => window.openModal('payment-modal');
+                 if(premArea) premArea.classList.remove('hidden');
+
                  qInput.disabled = true;
                  qInput.placeholder = "Sadece Premium Üyeler Soru Sorabilir";
                  qInput.classList.add('locked-input');
                  qInput.onclick = () => {
-                     if(confirm("Bu özellik Premium üyeler içindir.")) window.openModal('payment-modal');
+                     // Soru kutusuna tıklayınca da yeni sayfaya gitsin
+                     if(confirm("Bu özellik Premium üyeler içindir. İncelemek ister misin?")) window.navTo('subscription-screen');
                  }
              }
         }
 
         async function checkUserProfile(uid) {
-            const docRef = doc(db, "users", uid);
-            const docSnap = await getDoc(docRef);
-            return docSnap.exists() ? docSnap.data() : null;
+            try {
+                const docRef = doc(db, "users", uid);
+                const docSnap = await getDoc(docRef);
+                return docSnap.exists() ? docSnap.data() : null;
+            } catch (e) {
+                console.log("Profil okuma hatası:", e);
+                return null;
+            }
         }
 
-        // GÜNCELLEME: İsim senkronizasyonunu garantiye alan fonksiyon
         async function loadUserProfile(uid) {
             const data = await checkUserProfile(uid);
-            
-            // Eğer veri varsa veya en azından kullanıcı giriş yaptıysa
             const currentUser = auth.currentUser;
             let displayName = "";
 
             if (data && data.name) {
                 displayName = capitalizeWords(data.name);
             } else if (currentUser && currentUser.email) {
-                // Veritabanında isim yoksa e-postadan türet
                 displayName = capitalizeWords(currentUser.email.split('@')[0]);
             }
 
-            // 1. Profil ekranındaki ismi güncelle
             document.getElementById('profile-name').innerText = displayName;
-
-            // 2. Hesap Bilgilerim ekranındaki inputu güncelle (BOŞ KALMAMALI)
             document.getElementById('edit-name').value = displayName;
             
-            // Veri varsa diğer alanları doldur
             if (data) {
                 document.getElementById('edit-birthdate').value = data.birthdate || "";
-                document.getElementById('edit-gender').value = data.gender || "";
-                document.getElementById('edit-status').value = data.status || "";
+                document.getElementById('edit-gender').value = data.gender || "Erkek"; 
+                document.getElementById('edit-status').value = data.status || "Bekar";
                 document.getElementById('edit-job').value = data.job || "";
                 
-                // Temp
                 document.getElementById('temp-name').value = displayName;
                 document.getElementById('temp-birthdate').value = data.birthdate || "";
-                document.getElementById('temp-gender').value = data.gender || "";
-                document.getElementById('temp-status').value = data.status || "";
+                document.getElementById('temp-gender').value = data.gender || "Erkek";
+                document.getElementById('temp-status').value = data.status || "Bekar";
                 document.getElementById('temp-job').value = data.job || "";
 
                 isUserPremium = data.isPremium || false;
@@ -768,7 +870,7 @@
                 const historyRef = collection(db, "users", uid, "fortunes");
                 await addDoc(historyRef, {
                     text: text,
-                    date: new Date()
+                    date: new Date().toISOString()
                 });
             } catch(e) { console.log("History save error", e); }
         }
@@ -792,7 +894,13 @@
                     
                     querySnapshot.forEach((doc) => {
                         const d = doc.data();
-                        const dateStr = d.date ? new Date(d.date.seconds * 1000).toLocaleDateString('tr-TR') : "";
+                        let dateStr = "";
+                        if (d.date && typeof d.date === 'object' && d.date.seconds) {
+                             dateStr = new Date(d.date.seconds * 1000).toLocaleDateString('tr-TR');
+                        } else if (d.date) {
+                             dateStr = new Date(d.date).toLocaleDateString('tr-TR');
+                        }
+
                         const div = document.createElement('div');
                         div.className = "history-card";
                         div.innerHTML = `
@@ -823,7 +931,6 @@
                 document.getElementById('summary-content').style.filter = 'none';
                 document.getElementById('lock-overlay').style.display = 'none';
 
-                // Yükleme sırasında geçici isim ata (Inputlar boş kalmasın diye)
                 const tempName = capitalizeWords(user.email.split('@')[0]);
                 document.getElementById('profile-name').innerText = tempName;
                 document.getElementById('edit-name').value = tempName;
@@ -837,7 +944,7 @@
 
             } else {
                 document.getElementById('profile-name').innerText = "Misafir Kullanıcı";
-                document.getElementById('edit-name').value = ""; // Çıkış yapınca temizle
+                document.getElementById('edit-name').value = ""; 
                 document.getElementById('guest-actions').classList.remove('hidden');
                 document.getElementById('premium-area').classList.add('hidden');
                 document.getElementById('btn-logout-wrapper').classList.add('hidden');
@@ -848,7 +955,7 @@
             }
         });
 
-        // --- GEMINI & IMAGE HANDLING (RESIZED & MULTIPLE) ---
+        // --- GEMINI & IMAGE HANDLING ---
 
         window.triggerCamera = function() {
             document.getElementById('file-input').removeAttribute('multiple');

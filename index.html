@@ -50,7 +50,7 @@
             overflow-y: hidden; padding-bottom: var(--nav-height);
             background: var(--bg-body); animation: fadeIn 0.4s ease;
         }
-        #fortunes-screen, #profile-screen, #auth-screen, #onboarding-screen, #account-info-screen, #subscription-screen { overflow-y: auto; }
+        #fortunes-screen, #profile-screen, #auth-screen, #onboarding-screen, #account-info-screen, #subscription-screen, #manage-subscription-screen { overflow-y: auto; }
 
         .screen.active { display: flex; }
         @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
@@ -148,16 +148,21 @@
             box-shadow: 0 2px 8px rgba(0,0,0,0.03);
         }
         
-        /* Updated Premium Card Style (More subtle for Profile) */
+        /* Premium Cards */
         .premium-card-v2 {
             margin: 0 24px; background: linear-gradient(135deg, #1C1C1E 0%, #000000 100%);
             border-radius: 20px; padding: 20px; position: relative; overflow: hidden;
             border: 1px solid rgba(255, 215, 0, 0.3); box-shadow: 0 10px 30px rgba(0,0,0,0.2);
-            margin-top: -20px; margin-bottom: 20px; cursor: pointer;
+            margin-top: -20px; margin-bottom: 20px; cursor: pointer; transition: transform 0.2s;
         }
-        .premium-btn {
-            background: linear-gradient(90deg, #FFD700, #FDB931); color: black; border: none; 
-            padding: 14px; width: 100%; border-radius: 12px; font-weight: 700; margin-top: 15px; cursor: pointer;
+        .premium-card-v2:active { transform: scale(0.98); }
+
+        /* Active Premium Card Style (Gold) */
+        .premium-card-active {
+            margin: 0 24px; background: linear-gradient(135deg, #FFD700 0%, #FDB931 100%);
+            border-radius: 20px; padding: 20px; position: relative; overflow: hidden;
+            border: 1px solid rgba(255, 255, 255, 0.5); box-shadow: 0 10px 30px rgba(212, 175, 55, 0.3);
+            margin-top: -20px; margin-bottom: 20px; cursor: pointer; color: black;
         }
         
         /* SUBSCRIPTION PAGE STYLES */
@@ -454,6 +459,36 @@
             </div>
         </div>
 
+        <div id="manage-subscription-screen" class="screen">
+            <div class="header">
+                <div onclick="navTo('profile-screen')" style="font-size:24px; color:var(--text-main); cursor:pointer;"><i class="fa-solid fa-arrow-left"></i></div>
+                <div class="header-title">Üyelik Yönetimi</div>
+            </div>
+            
+            <div style="padding: 30px 24px; text-align: center;">
+                <div style="width: 100px; height: 100px; background: rgba(255, 215, 0, 0.1); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 20px auto; border: 2px solid var(--gold);">
+                    <i class="fa-solid fa-crown" style="font-size: 40px; color: var(--gold);"></i>
+                </div>
+                <h2 style="font-size: 22px; font-weight: 800; color: var(--text-main); margin-bottom: 5px;">KahveLab Premium</h2>
+                <div style="color: #4cd964; font-weight: 600; font-size: 14px; margin-bottom: 30px;"><i class="fa-solid fa-circle-check"></i> Aboneliğin Aktif</div>
+
+                <div style="background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 16px; padding: 20px; text-align: left; margin-bottom: 30px;">
+                    <div style="font-size: 13px; color: var(--text-sub); margin-bottom: 5px;">Plan</div>
+                    <div style="font-size: 16px; font-weight: 600; color: var(--text-main); margin-bottom: 15px;">Yıllık Premium Plan</div>
+                    
+                    <div style="height: 1px; background: var(--border-color); margin-bottom: 15px;"></div>
+                    
+                    <div style="font-size: 13px; color: var(--text-sub); margin-bottom: 5px;">Sonraki Yenileme</div>
+                    <div style="font-size: 16px; font-weight: 600; color: var(--text-main);">14 Şubat 2026</div>
+                </div>
+
+                <button class="delete-account-btn" onclick="window.cancelPremium()">Aboneliği İptal Et</button>
+                <div style="margin-top: 15px; font-size: 12px; color: var(--text-sub);">
+                    İptal etsen bile dönem sonuna kadar kullanmaya devam edebilirsin.
+                </div>
+            </div>
+        </div>
+
         <div id="profile-screen" class="screen">
             <div class="header"><div class="header-title">Hesabım</div></div>
             <div class="profile-header">
@@ -466,15 +501,8 @@
                 </div>
             </div>
 
-            <div id="premium-area" class="hidden">
-                <div class="premium-card-v2" onclick="navTo('subscription-screen')">
-                    <div style="display:flex; justify-content:space-between; align-items:center;">
-                        <h3 style="color:white; font-size:18px;">KahveLab <span style="color:var(--gold)">Premium</span></h3>
-                        <i class="fa-solid fa-chevron-right" style="color:var(--text-sub); font-size:16px;"></i>
-                    </div>
-                    <p style="color:#bbb; font-size:13px; margin-top:5px;">Özellikleri keşfetmek için tıkla</p>
+            <div id="premium-area">
                 </div>
-            </div>
 
             <div class="menu-list">
                 <div class="menu-item hidden" id="menu-account-info" onclick="navTo('account-info-screen')">
@@ -769,7 +797,6 @@
             const user = auth.currentUser;
             if(!user) return;
 
-            // Sadece senin test hesabın için simülasyonu aç
             if(user.email === "volkan@litre.com") {
                 window.openModal('payment-modal');
             } else {
@@ -785,7 +812,6 @@
                  await setDoc(doc(db, "users", user.uid), { isPremium: true }, { merge: true });
                  document.getElementById('loading-overlay').style.display = 'none';
                  closeAllSheets();
-                 // Başarılı olunca profil sayfasına at ki durumu görsün
                  window.navTo('profile-screen');
                  alert("Tebrikler! Artık Premium Üyesin.");
                  isUserPremium = true;
@@ -793,30 +819,62 @@
              }, 1500);
         }
 
+        window.cancelPremium = async function() {
+            const user = auth.currentUser;
+             if(!user) return;
+             if(confirm("Premium üyeliğini iptal etmek istiyor musun?")) {
+                 document.getElementById('loading-overlay').style.display = 'flex';
+                 try {
+                     await setDoc(doc(db, "users", user.uid), { isPremium: false }, { merge: true });
+                     document.getElementById('loading-overlay').style.display = 'none';
+                     alert("Aboneliğin iptal edildi.");
+                     isUserPremium = false;
+                     updatePremiumUI(false);
+                     window.navTo('profile-screen');
+                 } catch(e) {
+                     document.getElementById('loading-overlay').style.display = 'none';
+                     alert("Hata: " + e.message);
+                 }
+             }
+        }
+
+        // GÜNCEL UI FONKSİYONU: Kart Tasarımı Burada Değişiyor
         function updatePremiumUI(isPrem) {
-             const btn = document.getElementById('btn-upgrade'); // Eski buton (artık kullanılmıyor ama kodda kalsın)
              const qInput = document.getElementById('premium-question');
              const premArea = document.getElementById('premium-area');
 
              if(isPrem) {
-                 if(btn) btn.style.display = 'none';
-                 
-                 // Premium kullanıcı kartı gizleyebilir veya "Aktif" gösterebiliriz.
-                 // Şimdilik gizleyelim, çünkü zaten satın aldı.
-                 if(premArea) premArea.classList.add('hidden');
+                 // PREMIUM KULLANICI İÇİN KART
+                 premArea.innerHTML = `
+                    <div class="premium-card-active" onclick="navTo('manage-subscription-screen')">
+                        <div style="display:flex; justify-content:space-between; align-items:center;">
+                            <h3 style="font-weight:900; font-size:18px;">PREMIUM <span style="font-size:12px; vertical-align:middle; background:rgba(0,0,0,0.1); padding:2px 8px; border-radius:10px;">AKTİF</span></h3>
+                            <i class="fa-solid fa-crown" style="font-size:24px;"></i>
+                        </div>
+                        <p style="font-size:13px; margin-top:5px; opacity:0.8;">Üyeliğini yönetmek için tıkla</p>
+                    </div>
+                 `;
 
                  qInput.disabled = false;
                  qInput.placeholder = "Özel sorunu buraya yaz...";
                  qInput.classList.remove('locked-input');
                  qInput.onclick = null;
              } else {
-                 if(premArea) premArea.classList.remove('hidden');
+                 // STANDART KULLANICI İÇİN KART (TANITIM)
+                 premArea.innerHTML = `
+                    <div class="premium-card-v2" onclick="navTo('subscription-screen')">
+                        <div style="display:flex; justify-content:space-between; align-items:center;">
+                            <h3 style="color:white; font-size:18px;">KahveLab <span style="color:var(--gold)">Premium</span></h3>
+                            <i class="fa-solid fa-chevron-right" style="color:var(--text-sub); font-size:16px;"></i>
+                        </div>
+                        <p style="color:#bbb; font-size:13px; margin-top:5px;">Özellikleri keşfetmek için tıkla</p>
+                    </div>
+                 `;
 
                  qInput.disabled = true;
                  qInput.placeholder = "Sadece Premium Üyeler Soru Sorabilir";
                  qInput.classList.add('locked-input');
                  qInput.onclick = () => {
-                     // Soru kutusuna tıklayınca da yeni sayfaya gitsin
                      if(confirm("Bu özellik Premium üyeler içindir. İncelemek ister misin?")) window.navTo('subscription-screen');
                  }
              }
@@ -861,6 +919,9 @@
 
                 isUserPremium = data.isPremium || false;
                 updatePremiumUI(isUserPremium);
+            } else {
+                // Veri yoksa bile default UI'ı bas
+                updatePremiumUI(false);
             }
         }
 
@@ -925,7 +986,6 @@
         onAuthStateChanged(auth, async (user) => {
             if (user) {
                 document.getElementById('guest-actions').classList.add('hidden');
-                document.getElementById('premium-area').classList.remove('hidden');
                 document.getElementById('btn-logout-wrapper').classList.remove('hidden');
                 document.getElementById('menu-account-info').classList.remove('hidden');
                 document.getElementById('summary-content').style.filter = 'none';
@@ -946,7 +1006,8 @@
                 document.getElementById('profile-name').innerText = "Misafir Kullanıcı";
                 document.getElementById('edit-name').value = ""; 
                 document.getElementById('guest-actions').classList.remove('hidden');
-                document.getElementById('premium-area').classList.add('hidden');
+                // Misafirler için de premium kartı göster (updatePremiumUI(false) çağırarak)
+                updatePremiumUI(false);
                 document.getElementById('btn-logout-wrapper').classList.add('hidden');
                 document.getElementById('menu-account-info').classList.add('hidden');
                 document.getElementById('summary-content').style.filter = 'blur(6px)';

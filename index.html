@@ -112,15 +112,15 @@
             backdrop-filter: blur(5px);
         }
 
-        /* --- NEW SUMMARY TOGGLE & CARDS --- */
-        .summary-container { padding: 0 20px; padding-bottom: 20px; flex: 1; display: flex; flex-direction: column; position: relative;}
+        /* --- SUMMARY SECTION --- */
+        .summary-container { padding: 0 20px; padding-bottom: 20px; flex: 1; display: flex; flex-direction: column; position: relative; }
         
-        /* GUEST OVERLAY */
+        /* GUEST OVERLAY (BUZLU CAM) - DÜZELTİLDİ */
         #guest-overlay {
             position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(var(--bg-body-rgb), 0.1); 
-            backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
-            z-index: 50; display: none;
+            background: rgba(var(--bg-body), 0.6); /* Hafif karartma */
+            backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); /* Buzlu cam */
+            z-index: 50; display: none; /* Başlangıçta gizli, JS ile açılacak */
             flex-direction: column; align-items: center; justify-content: center;
             text-align: center; border-radius: 20px;
         }
@@ -232,10 +232,24 @@
         .nav-item i { font-size: 22px; transition: transform 0.2s; }
         .nav-item.active i { transform: translateY(-4px); }
 
-        /* Profile Layout Fixes */
+        /* Profile Layout Fixes - DÜZELTİLDİ */
         .profile-header { 
             text-align: center; padding: 30px 20px; border-bottom: 1px solid var(--border-color);
             display: flex; flex-direction: column; align-items: center; gap: 10px;
+        }
+        .menu-list { padding: 20px; width: 100%; }
+        .menu-item {
+            display: flex; align-items: center; justify-content: space-between; /* İki uca yasla */
+            background: var(--bg-card); padding: 18px; border-radius: 14px; margin-bottom: 12px;
+            border: 1px solid var(--border-color); color: var(--text-main); font-size: 15px; cursor: pointer;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.03);
+            width: 100%; /* Tam genişlik */
+        }
+        .menu-item span {
+            display: flex; align-items: center; gap: 10px; /* İkon ve yazı arası boşluk */
+        }
+        .menu-item i:first-child {
+            width: 20px; text-align: center; color: var(--text-sub);
         }
         
         /* Premium Cards */
@@ -721,19 +735,19 @@
 
             <div class="menu-list">
                 <div class="menu-item hidden" id="menu-account-info" onclick="navTo('account-info-screen')">
-                    <span><i class="fa-solid fa-id-card" style="margin-right:10px; color:var(--text-sub);"></i> Hesap Bilgilerim</span>
+                    <span><i class="fa-solid fa-id-card"></i> Hesap Bilgilerim</span>
                     <i class="fa-solid fa-chevron-right" style="font-size:12px; color:var(--text-sub);"></i>
                 </div>
                 <div class="menu-item" onclick="openModal('settings-modal')">
-                    <span><i class="fa-solid fa-gear" style="margin-right:10px; color:var(--text-sub);"></i> Ayarlar</span>
+                    <span><i class="fa-solid fa-gear"></i> Ayarlar</span>
                     <i class="fa-solid fa-chevron-right" style="font-size:12px; color:var(--text-sub);"></i>
                 </div>
                 <div class="menu-item">
-                    <span><i class="fa-solid fa-bell" style="margin-right:10px; color:var(--text-sub);"></i> Bildirimler</span>
+                    <span><i class="fa-solid fa-bell"></i> Bildirimler</span>
                     <i class="fa-solid fa-chevron-right" style="font-size:12px; color:var(--text-sub);"></i>
                 </div>
                 <div id="btn-logout-wrapper" class="menu-item hidden" style="color:#FF3B30; border-color:rgba(255,59,48,0.2);" onclick="window.logoutUser()">
-                    <span><i class="fa-solid fa-right-from-bracket" style="margin-right:10px;"></i> Çıkış Yap</span>
+                    <span><i class="fa-solid fa-right-from-bracket"></i> Çıkış Yap</span>
                 </div>
             </div>
         </div>
@@ -1117,7 +1131,7 @@
             closeAllSheets();
         }
 
-        // PREMIUM LOGIC
+        // PREMIUM LOGIC - FIX: Await setDoc properly
         window.selectPlan = function(plan, el) {
             document.querySelectorAll('.sub-plan-card').forEach(c => c.classList.remove('selected'));
             el.classList.add('selected');
@@ -1137,18 +1151,25 @@
              const user = auth.currentUser;
              if(!user) return;
              document.getElementById('loading-overlay').style.display = 'flex';
-             setTimeout(async () => {
+             
+             try {
+                 // DÜZELTME: await ile işlemin bitmesini bekle
                  await setDoc(doc(db, "users", user.uid), { isPremium: true }, { merge: true });
+                 
                  document.getElementById('loading-overlay').style.display = 'none';
                  closeAllSheets();
                  window.navTo('profile-screen');
                  alert("Tebrikler! Artık Premium Üyesin.");
+                 
                  isUserPremium = true;
                  updatePremiumUI(true);
                  updateDaySummaryState();
-                 // Generate insight immediately after upgrade
                  generateDailyInsight(user.uid, currentUserData);
-             }, 1500);
+             } catch(e) {
+                 console.error(e);
+                 document.getElementById('loading-overlay').style.display = 'none';
+                 alert("Hata oluştu: " + e.message);
+             }
         }
 
         window.cancelPremium = async function() {
@@ -1254,8 +1275,8 @@
                 document.getElementById('temp-status').value = data.status || "Bekar";
                 document.getElementById('temp-job').value = data.job || "";
 
-                // Force Premium Check from DB
-                isUserPremium = data.isPremium === true; 
+                // DÜZELTME: Veritabanındaki isPremium değerine güven
+                isUserPremium = (data.isPremium === true); 
                 updatePremiumUI(isUserPremium);
                 
                 // If premium, trigger daily insight generation (silent)
@@ -1320,11 +1341,15 @@
 
         onAuthStateChanged(auth, async (user) => {
             if (user) {
+                // Giriş yapmış kullanıcı için misafir duvarını kaldır
+                document.getElementById('guest-overlay').classList.remove('active');
+                
                 document.getElementById('guest-actions').classList.add('hidden');
                 document.getElementById('btn-logout-wrapper').classList.remove('hidden');
                 document.getElementById('menu-account-info').classList.remove('hidden');
+                
+                // Ana sayfa kilit ekranını (Giriş yap butonu olan) gizle
                 document.getElementById('lock-overlay').style.display = 'none';
-                document.getElementById('guest-overlay').classList.remove('active'); // Hide guest wall
 
                 const tempName = capitalizeWords(user.email.split('@')[0]);
                 document.getElementById('profile-name').innerText = tempName;
@@ -1338,6 +1363,7 @@
                 }
 
             } else {
+                // Giriş yapmamış kullanıcı (Misafir)
                 document.getElementById('profile-name').innerText = "Misafir Kullanıcı";
                 document.getElementById('edit-name').value = ""; 
                 document.getElementById('guest-actions').classList.remove('hidden');
@@ -1345,7 +1371,9 @@
                 document.getElementById('btn-logout-wrapper').classList.add('hidden');
                 document.getElementById('menu-account-info').classList.add('hidden');
                 document.getElementById('lock-overlay').style.display = 'flex';
-                document.getElementById('guest-overlay').classList.add('active'); // Show guest wall
+                
+                // Misafir Duvarını Aç (Buzlu Cam)
+                document.getElementById('guest-overlay').classList.add('active');
                 
                 if(document.getElementById('onboarding-screen').classList.contains('active')) { window.navTo('auth-screen'); }
             }

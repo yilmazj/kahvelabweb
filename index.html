@@ -115,17 +115,16 @@
         /* --- SUMMARY SECTION --- */
         .summary-container { padding: 0 20px; padding-bottom: 20px; flex: 1; display: flex; flex-direction: column; position: relative; }
         
-        /* GUEST OVERLAY (BUZLU CAM) - DÜZELTİLDİ */
+        /* GUEST OVERLAY (BUZLU CAM) */
         #guest-overlay {
             position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(var(--bg-body), 0.6); /* Hafif karartma */
-            backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); /* Buzlu cam */
-            z-index: 50; display: none; /* Başlangıçta gizli, JS ile açılacak */
+            background: rgba(var(--bg-body), 0.6); 
+            backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+            z-index: 50; display: flex; /* Varsayılan olarak görünür, JS ile gizlenecek */
             flex-direction: column; align-items: center; justify-content: center;
             text-align: center; border-radius: 20px;
         }
-        #guest-overlay.active { display: flex; }
-
+        
         .toggle-capsule-container {
             display: flex; background: rgba(128,128,128,0.15); 
             padding: 4px; border-radius: 16px; margin-bottom: 20px;
@@ -239,14 +238,14 @@
         }
         .menu-list { padding: 20px; width: 100%; }
         .menu-item {
-            display: flex; align-items: center; justify-content: space-between; /* İki uca yasla */
+            display: flex; align-items: center; justify-content: space-between; 
             background: var(--bg-card); padding: 18px; border-radius: 14px; margin-bottom: 12px;
             border: 1px solid var(--border-color); color: var(--text-main); font-size: 15px; cursor: pointer;
             box-shadow: 0 2px 8px rgba(0,0,0,0.03);
-            width: 100%; /* Tam genişlik */
+            width: 100%; 
         }
         .menu-item span {
-            display: flex; align-items: center; gap: 10px; /* İkon ve yazı arası boşluk */
+            display: flex; align-items: center; gap: 10px; 
         }
         .menu-item i:first-child {
             width: 20px; text-align: center; color: var(--text-sub);
@@ -494,7 +493,7 @@
             <div class="summary-container">
                 <div id="guest-overlay">
                     <i class="fa-solid fa-lock" style="font-size:32px; color:var(--text-main); margin-bottom:15px;"></i>
-                    <h3 style="margin-bottom:5px;">Günün Enerjisini Keşfet</h3>
+                    <h3 style="margin-bottom:5px; color:var(--text-main);">Günün Enerjisini Keşfet</h3>
                     <p style="font-size:13px; color:var(--text-sub); margin-bottom:20px; padding:0 20px;">
                         Sana özel günlük yorumları ve analizleri görmek için giriş yapmalısın.
                     </p>
@@ -872,6 +871,16 @@
         let isUserPremium = false;
         let currentUserData = {}; // Cache user data for daily insight
 
+        // --- THEME PERSISTENCE ---
+        // Uygulama başlarken hafızadan temayı oku
+        const savedTheme = localStorage.getItem('theme') || 'system';
+        // HTML render olmadan tema sınıfını ata ki yanıp sönme olmasın
+        if(savedTheme === 'dark' || (savedTheme === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+            document.body.classList.add('dark-mode');
+        } else {
+            document.body.classList.remove('dark-mode');
+        }
+
         function capitalizeWords(str) {
             if(!str) return "";
             return str.replace(/\b\w/g, l => l.toUpperCase());
@@ -1011,7 +1020,6 @@
 
         // --- GEMINI DAILY INSIGHT ---
         async function generateDailyInsight(uid, userData) {
-            // Check if we already have today's insight
             const today = new Date().toISOString().split('T')[0];
             const docRef = doc(db, "users", uid, "daily_insights", today);
             
@@ -1022,7 +1030,6 @@
                     return;
                 }
 
-                // Not found, generate with Gemini
                 const prompt = `
                     Sen mistik bir falcı ve yaşam koçusun. Kullanıcı Profili:
                     Ad: ${userData.name}, Yaşadığı Yer: ${userData.city || "Bilinmiyor"}, 
@@ -1048,15 +1055,10 @@
                 
                 const data = await response.json();
                 let text = data.candidates[0].content.parts[0].text;
-                // Clean markdown code blocks if present
                 text = text.replace(/```json/g, '').replace(/```/g, '').trim();
                 
                 const insightData = JSON.parse(text);
-                
-                // Save to Firestore
                 await setDoc(docRef, insightData);
-                
-                // Render
                 renderDailyInsight(insightData);
 
             } catch(e) {
@@ -1094,7 +1096,6 @@
 
             if(tab === 'day') {
                 updateDaySummaryState();
-                // Trigger generation if user is premium and logged in
                 if(auth.currentUser && isUserPremium) {
                     generateDailyInsight(auth.currentUser.uid, currentUserData);
                 }
@@ -1131,7 +1132,7 @@
             closeAllSheets();
         }
 
-        // PREMIUM LOGIC - FIX: Await setDoc properly
+        // PREMIUM LOGIC
         window.selectPlan = function(plan, el) {
             document.querySelectorAll('.sub-plan-card').forEach(c => c.classList.remove('selected'));
             el.classList.add('selected');
@@ -1153,14 +1154,11 @@
              document.getElementById('loading-overlay').style.display = 'flex';
              
              try {
-                 // DÜZELTME: await ile işlemin bitmesini bekle
                  await setDoc(doc(db, "users", user.uid), { isPremium: true }, { merge: true });
-                 
                  document.getElementById('loading-overlay').style.display = 'none';
                  closeAllSheets();
                  window.navTo('profile-screen');
                  alert("Tebrikler! Artık Premium Üyesin.");
-                 
                  isUserPremium = true;
                  updatePremiumUI(true);
                  updateDaySummaryState();
@@ -1243,7 +1241,6 @@
 
         async function loadUserProfile(uid) {
             const data = await checkUserProfile(uid);
-            // Cache data globally
             currentUserData = data || {}; 
             
             const currentUser = auth.currentUser;
@@ -1275,11 +1272,10 @@
                 document.getElementById('temp-status').value = data.status || "Bekar";
                 document.getElementById('temp-job').value = data.job || "";
 
-                // DÜZELTME: Veritabanındaki isPremium değerine güven
+                // DÜZELTME: isPremium veritabanından okunuyor
                 isUserPremium = (data.isPremium === true); 
                 updatePremiumUI(isUserPremium);
                 
-                // If premium, trigger daily insight generation (silent)
                 if(isUserPremium) {
                     generateDailyInsight(uid, data);
                 }
@@ -1341,15 +1337,14 @@
 
         onAuthStateChanged(auth, async (user) => {
             if (user) {
-                // Giriş yapmış kullanıcı için misafir duvarını kaldır
-                document.getElementById('guest-overlay').classList.remove('active');
-                
                 document.getElementById('guest-actions').classList.add('hidden');
                 document.getElementById('btn-logout-wrapper').classList.remove('hidden');
                 document.getElementById('menu-account-info').classList.remove('hidden');
                 
-                // Ana sayfa kilit ekranını (Giriş yap butonu olan) gizle
                 document.getElementById('lock-overlay').style.display = 'none';
+                
+                // BUZLU CAMI KALDIR
+                document.getElementById('guest-overlay').classList.remove('active');
 
                 const tempName = capitalizeWords(user.email.split('@')[0]);
                 document.getElementById('profile-name').innerText = tempName;
@@ -1363,16 +1358,16 @@
                 }
 
             } else {
-                // Giriş yapmamış kullanıcı (Misafir)
                 document.getElementById('profile-name').innerText = "Misafir Kullanıcı";
                 document.getElementById('edit-name').value = ""; 
                 document.getElementById('guest-actions').classList.remove('hidden');
                 updatePremiumUI(false);
                 document.getElementById('btn-logout-wrapper').classList.add('hidden');
                 document.getElementById('menu-account-info').classList.add('hidden');
-                document.getElementById('lock-overlay').style.display = 'flex';
                 
-                // Misafir Duvarını Aç (Buzlu Cam)
+                // Misafirler için içeriği kilitle
+                document.getElementById('lock-overlay').style.display = 'flex';
+                // BUZLU CAMI AÇ (ANA SAYFA İÇİN)
                 document.getElementById('guest-overlay').classList.add('active');
                 
                 if(document.getElementById('onboarding-screen').classList.contains('active')) { window.navTo('auth-screen'); }
@@ -1478,13 +1473,25 @@
         }
         
         window.setTheme = function(mode, el) {
+            // Local Storage'a kaydet
+            localStorage.setItem('theme', mode);
+            
             document.querySelectorAll('.theme-opt').forEach(t => t.classList.remove('active-theme'));
-            el.classList.add('active-theme');
+            if(el) el.classList.add('active-theme');
             const body = document.body;
             if(mode === 'dark') body.classList.add('dark-mode');
             else if (mode === 'light') body.classList.remove('dark-mode');
             else { if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) body.classList.add('dark-mode'); else body.classList.remove('dark-mode'); }
         }
+
+        // --- THEME LOAD ---
+        // Sayfa yüklendiğinde butonun da "active" olmasını sağla
+        const activeTheme = localStorage.getItem('theme') || 'system';
+        const themeOpts = document.querySelectorAll('.theme-opt');
+        themeOpts.forEach(t => t.classList.remove('active-theme'));
+        if(activeTheme === 'light') themeOpts[0].classList.add('active-theme');
+        else if(activeTheme === 'dark') themeOpts[1].classList.add('active-theme');
+        else themeOpts[2].classList.add('active-theme');
 
         window.openModal = function(id) { document.getElementById('overlay').classList.add('open'); document.getElementById(id).classList.add('open'); }
         window.closeAllSheets = function() { document.getElementById('overlay').classList.remove('open'); document.querySelectorAll('.action-sheet, .modal-sheet').forEach(s => s.classList.remove('open')); }

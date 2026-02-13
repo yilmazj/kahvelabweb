@@ -4,6 +4,12 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>KahveLab - AI Powered</title>
+    
+    <link rel="icon" type="image/png" href="logo.png">
+    <link rel="apple-touch-icon" href="logo.png">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black">
+
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Playfair+Display:wght@700;900&display=swap" rel="stylesheet">
     
@@ -115,16 +121,24 @@
         /* --- SUMMARY SECTION --- */
         .summary-container { padding: 0 20px; padding-bottom: 20px; flex: 1; display: flex; flex-direction: column; position: relative; }
         
-        /* GUEST OVERLAY (BUZLU CAM) */
+        /* GUEST OVERLAY (BUZLU CAM) - DÜZELTİLDİ */
         #guest-overlay {
             position: absolute; top: 0; left: 0; width: 100%; height: 100%;
             background: rgba(var(--bg-body), 0.6); 
-            backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
-            z-index: 50; display: flex; /* Varsayılan olarak görünür, JS ile gizlenecek */
+            backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); 
+            z-index: 50; display: flex; /* Flex ile ortala */
             flex-direction: column; align-items: center; justify-content: center;
             text-align: center; border-radius: 20px;
+            opacity: 1; pointer-events: auto;
+            transition: opacity 0.3s ease;
         }
-        
+        /* Aktif değilse gizle */
+        #guest-overlay.hidden-overlay { 
+            opacity: 0; 
+            pointer-events: none; 
+            display: none !important; 
+        }
+
         .toggle-capsule-container {
             display: flex; background: rgba(128,128,128,0.15); 
             padding: 4px; border-radius: 16px; margin-bottom: 20px;
@@ -231,24 +245,23 @@
         .nav-item i { font-size: 22px; transition: transform 0.2s; }
         .nav-item.active i { transform: translateY(-4px); }
 
-        /* Profile Layout Fixes - DÜZELTİLDİ */
+        /* Profile Layout Fixes - TAM OLARAK İSTEDİĞİN GİBİ */
         .profile-header { 
             text-align: center; padding: 30px 20px; border-bottom: 1px solid var(--border-color);
             display: flex; flex-direction: column; align-items: center; gap: 10px;
         }
-        .menu-list { padding: 20px; width: 100%; }
+        .menu-list { padding: 20px; width: 100%; display: flex; flex-direction: column; gap: 10px; }
         .menu-item {
             display: flex; align-items: center; justify-content: space-between; 
-            background: var(--bg-card); padding: 18px; border-radius: 14px; margin-bottom: 12px;
+            background: var(--bg-card); padding: 16px 20px; border-radius: 14px;
             border: 1px solid var(--border-color); color: var(--text-main); font-size: 15px; cursor: pointer;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.03);
+            box-shadow: 0 2px 5px rgba(0,0,0,0.02);
             width: 100%; 
         }
-        .menu-item span {
-            display: flex; align-items: center; gap: 10px; 
-        }
-        .menu-item i:first-child {
-            width: 20px; text-align: center; color: var(--text-sub);
+        /* İkon ve yazı grubu */
+        .menu-left-group { display: flex; align-items: center; gap: 12px; }
+        .menu-item i.fa-solid:not(.fa-chevron-right) {
+            width: 20px; text-align: center; color: var(--text-sub); font-size: 18px;
         }
         
         /* Premium Cards */
@@ -491,7 +504,7 @@
             </div>
 
             <div class="summary-container">
-                <div id="guest-overlay">
+                <div id="guest-overlay" class="hidden-overlay">
                     <i class="fa-solid fa-lock" style="font-size:32px; color:var(--text-main); margin-bottom:15px;"></i>
                     <h3 style="margin-bottom:5px; color:var(--text-main);">Günün Enerjisini Keşfet</h3>
                     <p style="font-size:13px; color:var(--text-sub); margin-bottom:20px; padding:0 20px;">
@@ -734,19 +747,19 @@
 
             <div class="menu-list">
                 <div class="menu-item hidden" id="menu-account-info" onclick="navTo('account-info-screen')">
-                    <span><i class="fa-solid fa-id-card"></i> Hesap Bilgilerim</span>
+                    <span class="menu-left-group"><i class="fa-solid fa-id-card"></i> Hesap Bilgilerim</span>
                     <i class="fa-solid fa-chevron-right" style="font-size:12px; color:var(--text-sub);"></i>
                 </div>
                 <div class="menu-item" onclick="openModal('settings-modal')">
-                    <span><i class="fa-solid fa-gear"></i> Ayarlar</span>
+                    <span class="menu-left-group"><i class="fa-solid fa-gear"></i> Ayarlar</span>
                     <i class="fa-solid fa-chevron-right" style="font-size:12px; color:var(--text-sub);"></i>
                 </div>
                 <div class="menu-item">
-                    <span><i class="fa-solid fa-bell"></i> Bildirimler</span>
+                    <span class="menu-left-group"><i class="fa-solid fa-bell"></i> Bildirimler</span>
                     <i class="fa-solid fa-chevron-right" style="font-size:12px; color:var(--text-sub);"></i>
                 </div>
                 <div id="btn-logout-wrapper" class="menu-item hidden" style="color:#FF3B30; border-color:rgba(255,59,48,0.2);" onclick="window.logoutUser()">
-                    <span><i class="fa-solid fa-right-from-bracket"></i> Çıkış Yap</span>
+                    <span class="menu-left-group"><i class="fa-solid fa-right-from-bracket"></i> Çıkış Yap</span>
                 </div>
             </div>
         </div>
@@ -1341,10 +1354,8 @@
                 document.getElementById('btn-logout-wrapper').classList.remove('hidden');
                 document.getElementById('menu-account-info').classList.remove('hidden');
                 
-                document.getElementById('lock-overlay').style.display = 'none';
-                
-                // BUZLU CAMI KALDIR
-                document.getElementById('guest-overlay').classList.remove('active');
+                // BUZLU CAMI KALDIR (Giriş yapıldığı an)
+                document.getElementById('guest-overlay').classList.add('hidden-overlay');
 
                 const tempName = capitalizeWords(user.email.split('@')[0]);
                 document.getElementById('profile-name').innerText = tempName;
@@ -1365,10 +1376,8 @@
                 document.getElementById('btn-logout-wrapper').classList.add('hidden');
                 document.getElementById('menu-account-info').classList.add('hidden');
                 
-                // Misafirler için içeriği kilitle
-                document.getElementById('lock-overlay').style.display = 'flex';
-                // BUZLU CAMI AÇ (ANA SAYFA İÇİN)
-                document.getElementById('guest-overlay').classList.add('active');
+                // BUZLU CAMI AÇ (Misafir için)
+                document.getElementById('guest-overlay').classList.remove('hidden-overlay');
                 
                 if(document.getElementById('onboarding-screen').classList.contains('active')) { window.navTo('auth-screen'); }
             }

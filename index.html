@@ -52,7 +52,6 @@
         }
         #fortunes-screen, #profile-screen, #auth-screen, #onboarding-screen, #account-info-screen, #subscription-screen, #manage-subscription-screen { overflow-y: auto; }
         
-        /* Home screen özel scroll */
         #home-screen { overflow-y: auto; }
 
         .screen.active { display: flex; }
@@ -114,8 +113,19 @@
         }
 
         /* --- NEW SUMMARY TOGGLE & CARDS --- */
-        .summary-container { padding: 0 20px; padding-bottom: 20px; flex: 1; display: flex; flex-direction: column; }
+        .summary-container { padding: 0 20px; padding-bottom: 20px; flex: 1; display: flex; flex-direction: column; position: relative;}
         
+        /* GUEST OVERLAY */
+        #guest-overlay {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(var(--bg-body-rgb), 0.1); 
+            backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
+            z-index: 50; display: none;
+            flex-direction: column; align-items: center; justify-content: center;
+            text-align: center; border-radius: 20px;
+        }
+        #guest-overlay.active { display: flex; }
+
         .toggle-capsule-container {
             display: flex; background: rgba(128,128,128,0.15); 
             padding: 4px; border-radius: 16px; margin-bottom: 20px;
@@ -222,21 +232,26 @@
         .nav-item i { font-size: 22px; transition: transform 0.2s; }
         .nav-item.active i { transform: translateY(-4px); }
 
+        /* Profile Layout Fixes */
+        .profile-header { 
+            text-align: center; padding: 30px 20px; border-bottom: 1px solid var(--border-color);
+            display: flex; flex-direction: column; align-items: center; gap: 10px;
+        }
+        
         /* Premium Cards */
         .premium-card-v2 {
             margin: 0 24px; background: linear-gradient(135deg, #1C1C1E 0%, #000000 100%);
             border-radius: 20px; padding: 20px; position: relative; overflow: hidden;
             border: 1px solid rgba(255, 215, 0, 0.3); box-shadow: 0 10px 30px rgba(0,0,0,0.2);
-            margin-top: -20px; margin-bottom: 20px; cursor: pointer; transition: transform 0.2s;
+            margin-top: 20px; margin-bottom: 20px; cursor: pointer; transition: transform 0.2s;
         }
         .premium-card-v2:active { transform: scale(0.98); }
 
-        /* Active Premium Card Style (Gold) */
         .premium-card-active {
             margin: 0 24px; background: linear-gradient(135deg, #FFD700 0%, #FDB931 100%);
             border-radius: 20px; padding: 20px; position: relative; overflow: hidden;
             border: 1px solid rgba(255, 255, 255, 0.5); box-shadow: 0 10px 30px rgba(212, 175, 55, 0.3);
-            margin-top: -20px; margin-bottom: 20px; cursor: pointer; color: black;
+            margin-top: 20px; margin-bottom: 20px; cursor: pointer; color: black;
         }
         
         /* SUBSCRIPTION PAGE STYLES */
@@ -380,6 +395,14 @@
                 <input type="text" id="ob-name" class="auth-input" placeholder="Adın Soyadın">
                 <div style="margin-bottom:8px; font-size:12px; color:var(--text-sub);">Doğum Tarihi</div>
                 <input type="date" id="ob-birthdate" class="auth-input">
+                
+                <input type="text" id="ob-city" class="auth-input" placeholder="Yaşadığın Şehir (İsteğe Bağlı)">
+                
+                <div style="display:flex; gap:10px;">
+                    <input type="time" id="ob-birthtime" class="auth-input" style="flex:1;" placeholder="Doğum Saati">
+                    <input type="text" id="ob-birthplace" class="auth-input" style="flex:1;" placeholder="Doğum Yeri">
+                </div>
+                
                 <select id="ob-gender" class="auth-input">
                     <option value="" disabled selected>Cinsiyetin</option>
                     <option value="Erkek">Erkek</option>
@@ -395,6 +418,7 @@
                     <option value="Platonik">Platonik</option>
                     <option value="Karmaşık">Karmaşık</option>
                 </select>
+                <input type="text" id="ob-reldetail" class="auth-input" placeholder="İlişki Detayı (Örn: Eski sevgiliyi bekliyorum)">
                 <input type="text" id="ob-job" class="auth-input" placeholder="Mesleğin (Örn: Öğrenci, Mühendis)">
                 <button class="submit-btn" onclick="saveUserProfile(true)">Bilgilerimi Kaydet</button>
             </div>
@@ -409,6 +433,14 @@
                 <input type="text" id="edit-name" class="auth-input" placeholder="Adın Soyadın">
                 <div style="margin-bottom:8px; font-size:12px; color:var(--text-sub);">Doğum Tarihi</div>
                 <input type="date" id="edit-birthdate" class="auth-input">
+                
+                <input type="text" id="edit-city" class="auth-input" placeholder="Yaşadığın Şehir">
+                
+                <div style="display:flex; gap:10px;">
+                    <input type="time" id="edit-birthtime" class="auth-input" style="flex:1;">
+                    <input type="text" id="edit-birthplace" class="auth-input" style="flex:1;" placeholder="Doğum Yeri">
+                </div>
+
                 <select id="edit-gender" class="auth-input">
                     <option value="Erkek">Erkek</option>
                     <option value="Kadın">Kadın</option>
@@ -422,6 +454,7 @@
                     <option value="Platonik">Platonik</option>
                     <option value="Karmaşık">Karmaşık</option>
                 </select>
+                <input type="text" id="edit-reldetail" class="auth-input" placeholder="İlişki Detayı">
                 <input type="text" id="edit-job" class="auth-input" placeholder="Mesleğin">
                 <button class="submit-btn" onclick="saveUserProfile(false)">Güncelle</button>
             </div>
@@ -445,6 +478,15 @@
             </div>
 
             <div class="summary-container">
+                <div id="guest-overlay">
+                    <i class="fa-solid fa-lock" style="font-size:32px; color:var(--text-main); margin-bottom:15px;"></i>
+                    <h3 style="margin-bottom:5px;">Günün Enerjisini Keşfet</h3>
+                    <p style="font-size:13px; color:var(--text-sub); margin-bottom:20px; padding:0 20px;">
+                        Sana özel günlük yorumları ve analizleri görmek için giriş yapmalısın.
+                    </p>
+                    <button class="submit-btn" style="width:auto; padding:10px 30px;" onclick="navTo('auth-screen')">Giriş Yap / Kayıt Ol</button>
+                </div>
+
                 <div class="toggle-capsule-container">
                     <div class="toggle-btn active" onclick="switchSummaryTab('month', this)">Ayın Özeti</div>
                     <div class="toggle-btn premium-tab" onclick="switchSummaryTab('day', this)">
@@ -515,23 +557,41 @@
                     <div id="premium-content-unlocked" class="hidden">
                          <div class="motto-card" style="border-color:var(--gold); background:linear-gradient(135deg, rgba(212,175,55,0.1), rgba(0,0,0,0));">
                             <div class="share-btn-floating" onclick="shareSummary('day')"><i class="fa-solid fa-share-nodes"></i></div>
-                            <div class="motto-label" style="color:var(--gold)">GÜNÜN TAVSİYESİ</div>
-                            <div class="motto-text" style="font-size:16px;">"Bugün alıcı konumdasın. Bırak o sana yazsın, sakın ilk adımı atma prenses."</div>
+                            <div class="motto-label" style="color:var(--gold)">GÜNÜN MOTTOSU</div>
+                            <div id="daily-motto" class="motto-text" style="font-size:16px;">Yükleniyor...</div>
                         </div>
                         
                         <div class="thinking-of-you-card">
                             <div class="silhouette"><i class="fa-solid fa-user"></i></div>
                             <div>
                                 <div style="font-size:11px; opacity:0.7; text-transform:uppercase;">Seni Kim Düşünüyor?</div>
-                                <div style="font-weight:700; font-size:15px;">İsminde <span style="color:var(--gold)">S</span> veya <span style="color:var(--gold)">B</span> olan biri...</div>
+                                <div id="daily-thinking" style="font-weight:700; font-size:15px;">...</div>
                             </div>
                         </div>
 
-                        <div class="stat-row" style="border-color:var(--gold);">
-                            <i class="fa-solid fa-clock stat-icon" style="color:var(--gold)"></i>
-                            <div class="stat-name">Günün Şanslı Saati</div>
-                            <div style="font-weight:700; color:var(--text-main);">14:41</div>
+                        <div class="stats-grid">
+                            <div class="stat-row">
+                                <i class="fa-solid fa-heart stat-icon" style="color:#ff4d4d"></i>
+                                <div class="stat-name">Aşk</div>
+                                <div id="daily-love-stars" class="stat-rating"></div>
+                            </div>
+                            <div class="stat-row">
+                                <i class="fa-solid fa-coins stat-icon" style="color:var(--gold)"></i>
+                                <div class="stat-name">Para</div>
+                                <div id="daily-money-stars" class="stat-rating"></div>
+                            </div>
+                            <div class="stat-row">
+                                <i class="fa-solid fa-heart-pulse stat-icon" style="color:#3498db"></i>
+                                <div class="stat-name">Sağlık</div>
+                                <div id="daily-health-stars" class="stat-rating"></div>
+                            </div>
+                            <div class="stat-row" style="border-color:var(--gold);">
+                                <i class="fa-solid fa-clock stat-icon" style="color:var(--gold)"></i>
+                                <div class="stat-name">Şanslı Saat</div>
+                                <div id="daily-lucky-time" style="font-weight:700; color:var(--text-main);">...</div>
+                            </div>
                         </div>
+
                     </div>
                 </div>
 
@@ -642,9 +702,6 @@
                 </div>
 
                 <button class="delete-account-btn" onclick="window.cancelPremium()">Aboneliği İptal Et</button>
-                <div style="margin-top: 15px; font-size: 12px; color: var(--text-sub);">
-                    İptal etsen bile dönem sonuna kadar kullanmaya devam edebilirsin.
-                </div>
             </div>
         </div>
 
@@ -660,8 +717,7 @@
                 </div>
             </div>
 
-            <div id="premium-area">
-                </div>
+            <div id="premium-area"></div>
 
             <div class="menu-list">
                 <div class="menu-item hidden" id="menu-account-info" onclick="navTo('account-info-screen')">
@@ -800,6 +856,7 @@
 
         let uploadedImages = []; 
         let isUserPremium = false;
+        let currentUserData = {}; // Cache user data for daily insight
 
         function capitalizeWords(str) {
             if(!str) return "";
@@ -855,7 +912,7 @@
             const email = document.getElementById('login-email').value;
             const pass = document.getElementById('login-pass').value;
             try { 
-                const userCredential = await signInWithEmailAndPassword(auth, email, pass);
+                await signInWithEmailAndPassword(auth, email, pass);
                 window.navTo('home-screen');
             } 
             catch (error) { alert("Giriş Hatası: " + error.message); }
@@ -887,31 +944,27 @@
         // --- FIRESTORE USER PROFILE ---
         window.saveUserProfile = async function(isOnboarding) {
             const user = auth.currentUser;
-            if(!user) {
-                alert("Oturum hatası, lütfen tekrar giriş yap.");
-                window.navTo('auth-screen');
-                return;
-            }
+            if(!user) { alert("Oturum hatası."); window.navTo('auth-screen'); return; }
 
             const prefix = isOnboarding ? 'ob-' : 'edit-';
             const rawName = document.getElementById(prefix + 'name').value || "";
             const name = capitalizeWords(rawName);
             const birthdate = document.getElementById(prefix + 'birthdate').value || "";
+            const city = document.getElementById(prefix + 'city').value || "";
+            const birthtime = document.getElementById(prefix + 'birthtime').value || "";
+            const birthplace = document.getElementById(prefix + 'birthplace').value || "";
             const gender = document.getElementById(prefix + 'gender').value || "Belirtilmemiş";
             const status = document.getElementById(prefix + 'status').value || "Belirtilmemiş";
+            const relDetail = document.getElementById(prefix + 'reldetail').value || "";
             const job = document.getElementById(prefix + 'job').value || "";
 
             if(isOnboarding && (!name || !birthdate || !gender)) {
-                alert("Lütfen temel bilgileri doldurun.");
+                alert("Lütfen temel bilgileri (İsim, Doğum Tarihi, Cinsiyet) doldurun.");
                 return;
             }
 
             const userData = {
-                name: name,
-                birthdate: birthdate,
-                gender: gender,
-                status: status,
-                job: job,
+                name, birthdate, city, birthtime, birthplace, gender, status, relDetail, job,
                 email: user.email, 
                 updatedAt: new Date().toISOString() 
             };
@@ -919,14 +972,11 @@
             document.getElementById('loading-overlay').style.display = 'flex';
 
             try {
-                const timeout = new Promise((_, reject) => 
-                    setTimeout(() => reject(new Error("Firebase yanıt vermiyor.")), 10000)
-                );
-
-                await Promise.race([
-                    setDoc(doc(db, "users", user.uid), userData, { merge: true }),
-                    timeout
-                ]);
+                // Merge true ensures we don't wipe existing premium status
+                await setDoc(doc(db, "users", user.uid), userData, { merge: true });
+                
+                // Update Local Cache
+                currentUserData = { ...currentUserData, ...userData };
                 
                 document.getElementById('profile-name').innerText = name || capitalizeWords(user.email.split('@')[0]);
                 document.getElementById('edit-name').value = name; 
@@ -937,16 +987,90 @@
                     alert("Bilgiler başarıyla güncellendi!");
                     window.navTo('profile-screen');
                 }
-
             } catch(e) { 
-                console.error("Firebase Hatası:", e);
+                console.error(e);
                 alert("Hata Oluştu: " + e.message); 
             } finally {
                 document.getElementById('loading-overlay').style.display = 'none';
             }
         }
 
-        // --- SUMMARY LOGIC (NEW) ---
+        // --- GEMINI DAILY INSIGHT ---
+        async function generateDailyInsight(uid, userData) {
+            // Check if we already have today's insight
+            const today = new Date().toISOString().split('T')[0];
+            const docRef = doc(db, "users", uid, "daily_insights", today);
+            
+            try {
+                const docSnap = await getDoc(docRef);
+                if(docSnap.exists()) {
+                    renderDailyInsight(docSnap.data());
+                    return;
+                }
+
+                // Not found, generate with Gemini
+                const prompt = `
+                    Sen mistik bir falcı ve yaşam koçusun. Kullanıcı Profili:
+                    Ad: ${userData.name}, Yaşadığı Yer: ${userData.city || "Bilinmiyor"}, 
+                    İlişki Durumu: ${userData.status} (${userData.relDetail || ""}),
+                    Meslek: ${userData.job || "Bilinmiyor"}.
+                    
+                    Bugünün tarihine özel JSON formatında şunları üret:
+                    {
+                        "motto": "Kısa, imalı, motive edici bir günün sözü (aşk odaklı olmak zorunda değil, kişiye özel).",
+                        "thinking_hint": "Onu düşünen kişinin isminde geçen 2 harf (Örn: A ve K).",
+                        "love_score": 1-5 arası tam sayı,
+                        "money_score": 1-5 arası tam sayı,
+                        "health_score": 1-5 arası tam sayı,
+                        "lucky_time": "Saat:Dakika formatında günün şanslı saati"
+                    }
+                    Sadece saf JSON ver, markdown kullanma.
+                `;
+
+                const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_API_KEY}`, {
+                    method: "POST", headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ "contents": [{ "parts": [ {"text": prompt} ] }] })
+                });
+                
+                const data = await response.json();
+                let text = data.candidates[0].content.parts[0].text;
+                // Clean markdown code blocks if present
+                text = text.replace(/```json/g, '').replace(/```/g, '').trim();
+                
+                const insightData = JSON.parse(text);
+                
+                // Save to Firestore
+                await setDoc(docRef, insightData);
+                
+                // Render
+                renderDailyInsight(insightData);
+
+            } catch(e) {
+                console.log("Daily Gen Error:", e);
+                document.getElementById('daily-motto').innerText = "Evren bugün sessiz...";
+            }
+        }
+
+        function renderDailyInsight(data) {
+            document.getElementById('daily-motto').innerText = `"${data.motto}"`;
+            document.getElementById('daily-thinking').innerHTML = `İsminde <span style="color:var(--gold)">${data.thinking_hint}</span> geçen biri...`;
+            document.getElementById('daily-lucky-time').innerText = data.lucky_time;
+            
+            renderStars('daily-love-stars', data.love_score);
+            renderStars('daily-money-stars', data.money_score);
+            renderStars('daily-health-stars', data.health_score);
+        }
+
+        function renderStars(elementId, score) {
+            const container = document.getElementById(elementId);
+            let html = '';
+            for(let i=0; i<5; i++) {
+                html += `<i class="fa-solid fa-star rating-dot ${i < score ? 'filled' : ''}"></i>`;
+            }
+            container.innerHTML = html;
+        }
+
+        // --- SUMMARY LOGIC ---
         window.switchSummaryTab = function(tab, el) {
             document.querySelectorAll('.toggle-btn').forEach(b => b.classList.remove('active'));
             el.classList.add('active');
@@ -954,9 +1078,12 @@
             document.querySelectorAll('.summary-content-area').forEach(c => c.classList.remove('active'));
             document.getElementById(tab + '-summary').classList.add('active');
 
-            // If switching to 'day' tab, check premium again to be safe
             if(tab === 'day') {
                 updateDaySummaryState();
+                // Trigger generation if user is premium and logged in
+                if(auth.currentUser && isUserPremium) {
+                    generateDailyInsight(auth.currentUser.uid, currentUserData);
+                }
             }
         }
 
@@ -976,13 +1103,12 @@
         window.shareSummary = function(type) {
              const modal = document.getElementById('share-modal');
              const shareText = document.getElementById('share-text-target');
-             
              if(type === 'month') {
                  shareText.innerText = "Şubat: Kendini yeniden keşfettiğin, tozlu rafları temizlediğin o ay.";
              } else {
-                 shareText.innerText = "Bugün alıcı konumdasın. Bırak o sana yazsın, sakın ilk adımı atma.";
+                 const dailyMotto = document.getElementById('daily-motto').innerText;
+                 shareText.innerText = dailyMotto;
              }
-             
              window.openModal('share-modal');
         }
 
@@ -991,8 +1117,7 @@
             closeAllSheets();
         }
 
-
-        // YENİ: PREMIUM KONTROL VE SATIN ALMA SİMÜLASYONU
+        // PREMIUM LOGIC
         window.selectPlan = function(plan, el) {
             document.querySelectorAll('.sub-plan-card').forEach(c => c.classList.remove('selected'));
             el.classList.add('selected');
@@ -1001,8 +1126,6 @@
         window.checkPremiumAccess = function() {
             const user = auth.currentUser;
             if(!user) return;
-
-            // Sadece senin test hesabın için simülasyonu aç
             if(user.email === "volkan@litre.com") {
                 window.openModal('payment-modal');
             } else {
@@ -1022,7 +1145,9 @@
                  alert("Tebrikler! Artık Premium Üyesin.");
                  isUserPremium = true;
                  updatePremiumUI(true);
-                 updateDaySummaryState(); // Refresh summary too
+                 updateDaySummaryState();
+                 // Generate insight immediately after upgrade
+                 generateDailyInsight(user.uid, currentUserData);
              }, 1500);
         }
 
@@ -1037,7 +1162,7 @@
                      alert("Aboneliğin iptal edildi.");
                      isUserPremium = false;
                      updatePremiumUI(false);
-                     updateDaySummaryState(); // Refresh summary too
+                     updateDaySummaryState(); 
                      window.navTo('profile-screen');
                  } catch(e) {
                      document.getElementById('loading-overlay').style.display = 'none';
@@ -1046,13 +1171,11 @@
              }
         }
 
-        // GÜNCEL UI FONKSİYONU: Kart Tasarımı Burada Değişiyor
         function updatePremiumUI(isPrem) {
              const qInput = document.getElementById('premium-question');
              const premArea = document.getElementById('premium-area');
 
              if(isPrem) {
-                 // PREMIUM KULLANICI İÇİN KART
                  premArea.innerHTML = `
                     <div class="premium-card-active" onclick="navTo('manage-subscription-screen')">
                         <div style="display:flex; justify-content:space-between; align-items:center;">
@@ -1062,13 +1185,11 @@
                         <p style="font-size:13px; margin-top:5px; opacity:0.8;">Üyeliğini yönetmek için tıkla</p>
                     </div>
                  `;
-
                  qInput.disabled = false;
                  qInput.placeholder = "Özel sorunu buraya yaz...";
                  qInput.classList.remove('locked-input');
                  qInput.onclick = null;
              } else {
-                 // STANDART KULLANICI İÇİN KART (TANITIM)
                  premArea.innerHTML = `
                     <div class="premium-card-v2" onclick="navTo('subscription-screen')">
                         <div style="display:flex; justify-content:space-between; align-items:center;">
@@ -1078,7 +1199,6 @@
                         <p style="color:#bbb; font-size:13px; margin-top:5px;">Özellikleri keşfetmek için tıkla</p>
                     </div>
                  `;
-
                  qInput.disabled = true;
                  qInput.placeholder = "Sadece Premium Üyeler Soru Sorabilir";
                  qInput.classList.add('locked-input');
@@ -1086,8 +1206,6 @@
                      if(confirm("Bu özellik Premium üyeler içindir. İncelemek ister misin?")) window.navTo('subscription-screen');
                  }
              }
-             
-             // Ayrıca Ana sayfadaki durumu da güncelle
              updateDaySummaryState();
         }
 
@@ -1104,6 +1222,9 @@
 
         async function loadUserProfile(uid) {
             const data = await checkUserProfile(uid);
+            // Cache data globally
+            currentUserData = data || {}; 
+            
             const currentUser = auth.currentUser;
             let displayName = "";
 
@@ -1118,31 +1239,39 @@
             
             if (data) {
                 document.getElementById('edit-birthdate').value = data.birthdate || "";
+                document.getElementById('edit-city').value = data.city || "";
+                document.getElementById('edit-birthtime').value = data.birthtime || "";
+                document.getElementById('edit-birthplace').value = data.birthplace || "";
                 document.getElementById('edit-gender').value = data.gender || "Erkek"; 
                 document.getElementById('edit-status').value = data.status || "Bekar";
+                document.getElementById('edit-reldetail').value = data.relDetail || "";
                 document.getElementById('edit-job').value = data.job || "";
                 
+                // Temp Fill
                 document.getElementById('temp-name').value = displayName;
                 document.getElementById('temp-birthdate').value = data.birthdate || "";
                 document.getElementById('temp-gender').value = data.gender || "Erkek";
                 document.getElementById('temp-status').value = data.status || "Bekar";
                 document.getElementById('temp-job').value = data.job || "";
 
-                isUserPremium = data.isPremium || false;
+                // Force Premium Check from DB
+                isUserPremium = data.isPremium === true; 
                 updatePremiumUI(isUserPremium);
+                
+                // If premium, trigger daily insight generation (silent)
+                if(isUserPremium) {
+                    generateDailyInsight(uid, data);
+                }
             } else {
                 updatePremiumUI(false);
             }
         }
 
-        // --- HISTORY LOGIC ---
+        // --- HISTORY & GEMINI SENDING ---
         async function saveFortuneToHistory(uid, text) {
             try {
                 const historyRef = collection(db, "users", uid, "fortunes");
-                await addDoc(historyRef, {
-                    text: text,
-                    date: new Date().toISOString()
-                });
+                await addDoc(historyRef, { text: text, date: new Date().toISOString() });
             } catch(e) { console.log("History save error", e); }
         }
 
@@ -1150,19 +1279,16 @@
             const listEl = document.getElementById('fortunes-list');
             const emptyEl = document.getElementById('empty-history');
             listEl.innerHTML = "";
-            
             try {
                 const historyRef = collection(db, "users", uid, "fortunes");
                 const q = query(historyRef, orderBy("date", "desc"));
                 const querySnapshot = await getDocs(q);
-
                 if(querySnapshot.empty) {
                     listEl.style.display = 'none';
                     emptyEl.style.display = 'flex';
                 } else {
                     listEl.style.display = 'flex';
                     emptyEl.style.display = 'none';
-                    
                     querySnapshot.forEach((doc) => {
                         const d = doc.data();
                         let dateStr = "";
@@ -1171,7 +1297,6 @@
                         } else if (d.date) {
                              dateStr = new Date(d.date).toLocaleDateString('tr-TR');
                         }
-
                         const div = document.createElement('div');
                         div.className = "history-card";
                         div.innerHTML = `
@@ -1199,6 +1324,7 @@
                 document.getElementById('btn-logout-wrapper').classList.remove('hidden');
                 document.getElementById('menu-account-info').classList.remove('hidden');
                 document.getElementById('lock-overlay').style.display = 'none';
+                document.getElementById('guest-overlay').classList.remove('active'); // Hide guest wall
 
                 const tempName = capitalizeWords(user.email.split('@')[0]);
                 document.getElementById('profile-name').innerText = tempName;
@@ -1219,51 +1345,30 @@
                 document.getElementById('btn-logout-wrapper').classList.add('hidden');
                 document.getElementById('menu-account-info').classList.add('hidden');
                 document.getElementById('lock-overlay').style.display = 'flex';
+                document.getElementById('guest-overlay').classList.add('active'); // Show guest wall
+                
                 if(document.getElementById('onboarding-screen').classList.contains('active')) { window.navTo('auth-screen'); }
             }
         });
 
-        // --- GEMINI & IMAGE HANDLING ---
-
-        window.triggerCamera = function() {
-            document.getElementById('file-input').removeAttribute('multiple');
-            document.getElementById('file-input').click();
-        }
-        window.triggerGallery = function() {
-            document.getElementById('file-input').setAttribute('multiple', '');
-            document.getElementById('file-input').click();
-        }
-
-        window.openPhotoOptions = function() {
-            uploadedImages = [];
-            document.getElementById('overlay').classList.add('open');
-            document.getElementById('photo-options-sheet').classList.add('open');
-        }
+        window.triggerCamera = function() { document.getElementById('file-input').removeAttribute('multiple'); document.getElementById('file-input').click(); }
+        window.triggerGallery = function() { document.getElementById('file-input').setAttribute('multiple', ''); document.getElementById('file-input').click(); }
+        window.openPhotoOptions = function() { uploadedImages = []; document.getElementById('overlay').classList.add('open'); document.getElementById('photo-options-sheet').classList.add('open'); }
 
         window.handleFileSelect = async function(input) {
             if (input.files && input.files.length > 0) {
                 document.getElementById('loading-overlay').style.display = 'flex';
-                
                 let filesToProcess = Array.from(input.files);
                 const remainingSlots = 3 - uploadedImages.length;
-                if(filesToProcess.length > remainingSlots) {
-                    filesToProcess = filesToProcess.slice(0, remainingSlots);
-                }
-
+                if(filesToProcess.length > remainingSlots) filesToProcess = filesToProcess.slice(0, remainingSlots);
                 for (let file of filesToProcess) {
                     const resizedBase64 = await resizeImage(file);
                     const pureBase64 = resizedBase64.split(',')[1]; 
                     uploadedImages.push({ base64: pureBase64, src: resizedBase64 });
                 }
-
                 document.getElementById('loading-overlay').style.display = 'none';
-
-                if(uploadedImages.length >= 3) {
-                    closeAllSheets();
-                    showConfirmModal();
-                } else {
-                    alert(`${uploadedImages.length} fotoğraf yüklendi. 3'e tamamlamak için ${3 - uploadedImages.length} tane daha seç.`);
-                }
+                if(uploadedImages.length >= 3) { closeAllSheets(); showConfirmModal(); }
+                else { alert(`${uploadedImages.length} fotoğraf yüklendi. 3'e tamamlamak için ${3 - uploadedImages.length} tane daha seç.`); }
             }
             input.value = "";
         }
@@ -1283,7 +1388,6 @@
         window.sendToGemini = async function() {
             const user = auth.currentUser;
             if (!user) { alert("Lütfen giriş yapın"); return; }
-
             const tName = document.getElementById('temp-name').value;
             const tGender = document.getElementById('temp-gender').value;
             const tBirth = document.getElementById('temp-birthdate').value;
@@ -1309,9 +1413,7 @@
                 "inline_data": { "mime_type": "image/jpeg", "data": img.base64 }
             }));
 
-            const payload = {
-                "contents": [{ "parts": [ {"text": promptText}, ...imageParts ] }]
-            };
+            const payload = { "contents": [{ "parts": [ {"text": promptText}, ...imageParts ] }] };
 
             try {
                 const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_API_KEY}`, {
@@ -1319,7 +1421,6 @@
                 });
                 const data = await response.json();
                 document.getElementById('loading-overlay').style.display = 'none';
-
                 if(data.candidates && data.candidates[0].content) {
                     const fortuneText = data.candidates[0].content.parts[0].text;
                     const formattedText = fortuneText.replace(/\*\*(.*?)\*\*/g, '<br><strong>$1</strong>');
@@ -1357,14 +1458,8 @@
             else { if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) body.classList.add('dark-mode'); else body.classList.remove('dark-mode'); }
         }
 
-        window.openModal = function(id) {
-            document.getElementById('overlay').classList.add('open');
-            document.getElementById(id).classList.add('open');
-        }
-        window.closeAllSheets = function() {
-            document.getElementById('overlay').classList.remove('open');
-            document.querySelectorAll('.action-sheet, .modal-sheet').forEach(s => s.classList.remove('open'));
-        }
+        window.openModal = function(id) { document.getElementById('overlay').classList.add('open'); document.getElementById(id).classList.add('open'); }
+        window.closeAllSheets = function() { document.getElementById('overlay').classList.remove('open'); document.querySelectorAll('.action-sheet, .modal-sheet').forEach(s => s.classList.remove('open')); }
     </script>
 </body>
 </html>

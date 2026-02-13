@@ -523,10 +523,6 @@
         const auth = getAuth(app);
         const db = getFirestore(app);
 
-        // Offline Persistence - DEVRE DIŞI BIRAKILDI
-        // Bu özellik bazen tarayıcıda takılmalara (loading'de kalma) sebep olabiliyor.
-        // enableIndexedDbPersistence(db).catch((err) => { console.log(err.code); });
-
         const GEMINI_API_KEY = "AIzaSyCjSBmLJsOOb-uG9SRPt2c8cA5cAu1sfdE";
 
         let uploadedImages = []; // Stores 3 images
@@ -619,7 +615,7 @@
         }
 
         // --- FIRESTORE USER PROFILE ---
-        // GÜNCELLENEN KISIM: Loading hatasını çözmek için düzenlendi.
+        // GÜNCELLEME: İsim senkronizasyonu ve sonsuz yükleme düzeltildi
         window.saveUserProfile = async function(isOnboarding) {
             const user = auth.currentUser;
             if(!user) {
@@ -629,10 +625,8 @@
             }
 
             const prefix = isOnboarding ? 'ob-' : 'edit-';
-            // Capitalize Name Here
             const rawName = document.getElementById(prefix + 'name').value;
             const name = capitalizeWords(rawName);
-
             const birthdate = document.getElementById(prefix + 'birthdate').value;
             const gender = document.getElementById(prefix + 'gender').value;
             const status = document.getElementById(prefix + 'status').value;
@@ -643,26 +637,31 @@
                 return;
             }
 
-            // DİKKAT: Firestore'a kaydedilecek veri.
-            // new Date() kullanımı bazen eski kütüphanelerde sorun yaratabilir ama v9'da genelde ok.
-            // Yine de asıl sorun try/catch/finally eksikliğiydi.
             const userData = {
-                name: name, 
-                birthdate: birthdate, 
-                gender: gender, 
-                status: status, 
-                job: job, 
-                updatedAt: new Date()
+                name: name, birthdate: birthdate, gender: gender, status: status, job: job, updatedAt: new Date()
             };
 
-            // Loading'i aç
+            // Loading aç
             document.getElementById('loading-overlay').style.display = 'flex';
 
             try {
-                // await setDoc işleminin tamamlanmasını bekle
-                await setDoc(doc(db, "users", user.uid), userData, { merge: true });
+                // Zaman aşımı (Timeout) mekanizması ekliyorum. 
+                // 10 saniye içinde cevap gelmezse hata verip kapatacak.
+                const timeout = new Promise((_, reject) => 
+                    setTimeout(() => reject(new Error("Bağlantı zaman aşımına uğradı. İnternetini kontrol et.")), 10000)
+                );
+
+                // Race: Hangisi önce biterse onu kabul et.
+                await Promise.race([
+                    setDoc(doc(db, "users", user.uid), userData, { merge: true }),
+                    timeout
+                ]);
                 
-                // İşlem başarılı olursa:
+                // Başarılı ise arayüzü güncelle
+                // Sadece Firestore'a güvenme, localdeki veriyi de ekrana yaz.
+                document.getElementById('profile-name').innerText = name || capitalizeWords(user.email.split('@')[0]);
+                document.getElementById('edit-name').value = name; 
+
                 if(isOnboarding) {
                     window.navTo('home-screen');
                 } else {
@@ -671,28 +670,23 @@
                 }
 
             } catch(e) { 
-                // Hata olursa:
                 console.error(e);
-                alert("Kaydetme hatası: " + e.message); 
+                alert("Hata: " + e.message); 
             } finally {
-                // HER DURUMDA (Hata olsa da olmasa da) Loading'i kapat.
-                // "Yıldızlar hizalanıyor" yazısında takılmayı önler.
+                // NE OLURSA OLSUN YÜKLENİYOR EKRANINI KAPAT
                 document.getElementById('loading-overlay').style.display = 'none';
             }
         }
 
-        // PREMIUM UPGRADE
         window.upgradeToPremium = async function() {
              const user = auth.currentUser;
              if(!user) return;
              document.getElementById('loading-overlay').style.display = 'flex';
-             // Fake delay
              setTimeout(async () => {
                  await setDoc(doc(db, "users", user.uid), { isPremium: true }, { merge: true });
                  document.getElementById('loading-overlay').style.display = 'none';
                  closeAllSheets();
                  alert("Tebrikler! Artık Premium Üyesin.");
-                 // Force refresh state
                  isUserPremium = true;
                  updatePremiumUI(true);
              }, 1500);
@@ -705,8 +699,7 @@
                  btn.innerText = "Premium Üye Aktif";
                  btn.style.background = "#4cd964";
                  btn.style.color = "white";
-                 btn.onclick = null; // Disable click
-                 
+                 btn.onclick = null; 
                  qInput.disabled = false;
                  qInput.placeholder = "Özel sorunu buraya yaz...";
                  qInput.classList.remove('locked-input');
@@ -714,7 +707,6 @@
              } else {
                  btn.innerText = "Premium'a Geç ₺99/ay";
                  btn.onclick = () => window.openModal('payment-modal');
-
                  qInput.disabled = true;
                  qInput.placeholder = "Sadece Premium Üyeler Soru Sorabilir";
                  qInput.classList.add('locked-input');
@@ -730,27 +722,41 @@
             return docSnap.exists() ? docSnap.data() : null;
         }
 
+        // GÜNCELLEME: İsim senkronizasyonunu garantiye alan fonksiyon
         async function loadUserProfile(uid) {
             const data = await checkUserProfile(uid);
+            
+            // Eğer veri varsa veya en azından kullanıcı giriş yaptıysa
+            const currentUser = auth.currentUser;
+            let displayName = "";
+
+            if (data && data.name) {
+                displayName = capitalizeWords(data.name);
+            } else if (currentUser && currentUser.email) {
+                // Veritabanında isim yoksa e-postadan türet
+                displayName = capitalizeWords(currentUser.email.split('@')[0]);
+            }
+
+            // 1. Profil ekranındaki ismi güncelle
+            document.getElementById('profile-name').innerText = displayName;
+
+            // 2. Hesap Bilgilerim ekranındaki inputu güncelle (BOŞ KALMAMALI)
+            document.getElementById('edit-name').value = displayName;
+            
+            // Veri varsa diğer alanları doldur
             if (data) {
-                // Sync Names
-                const fixedName = capitalizeWords(data.name);
-                document.getElementById('profile-name').innerText = fixedName;
-                document.getElementById('edit-name').value = fixedName;
-                
                 document.getElementById('edit-birthdate').value = data.birthdate || "";
                 document.getElementById('edit-gender').value = data.gender || "";
                 document.getElementById('edit-status').value = data.status || "";
                 document.getElementById('edit-job').value = data.job || "";
                 
                 // Temp
-                document.getElementById('temp-name').value = fixedName;
+                document.getElementById('temp-name').value = displayName;
                 document.getElementById('temp-birthdate').value = data.birthdate || "";
                 document.getElementById('temp-gender').value = data.gender || "";
                 document.getElementById('temp-status').value = data.status || "";
                 document.getElementById('temp-job').value = data.job || "";
 
-                // Premium Check
                 isUserPremium = data.isPremium || false;
                 updatePremiumUI(isUserPremium);
             }
@@ -817,8 +823,10 @@
                 document.getElementById('summary-content').style.filter = 'none';
                 document.getElementById('lock-overlay').style.display = 'none';
 
-                // Initial Name (Before Load)
-                document.getElementById('profile-name').innerText = capitalizeWords(user.email.split('@')[0]);
+                // Yükleme sırasında geçici isim ata (Inputlar boş kalmasın diye)
+                const tempName = capitalizeWords(user.email.split('@')[0]);
+                document.getElementById('profile-name').innerText = tempName;
+                document.getElementById('edit-name').value = tempName;
 
                 await loadUserProfile(user.uid);
                 await loadFortunesHistory(user.uid);
@@ -829,6 +837,7 @@
 
             } else {
                 document.getElementById('profile-name').innerText = "Misafir Kullanıcı";
+                document.getElementById('edit-name').value = ""; // Çıkış yapınca temizle
                 document.getElementById('guest-actions').classList.remove('hidden');
                 document.getElementById('premium-area').classList.add('hidden');
                 document.getElementById('btn-logout-wrapper').classList.add('hidden');
@@ -842,7 +851,7 @@
         // --- GEMINI & IMAGE HANDLING (RESIZED & MULTIPLE) ---
 
         window.triggerCamera = function() {
-            document.getElementById('file-input').removeAttribute('multiple'); // Camera needs single usually
+            document.getElementById('file-input').removeAttribute('multiple');
             document.getElementById('file-input').click();
         }
         window.triggerGallery = function() {
@@ -851,19 +860,16 @@
         }
 
         window.openPhotoOptions = function() {
-            uploadedImages = []; // Reset
+            uploadedImages = [];
             document.getElementById('overlay').classList.add('open');
             document.getElementById('photo-options-sheet').classList.add('open');
         }
 
         window.handleFileSelect = async function(input) {
             if (input.files && input.files.length > 0) {
-                document.getElementById('loading-overlay').style.display = 'flex'; // Show loading during compression
+                document.getElementById('loading-overlay').style.display = 'flex';
                 
-                // Convert FileList to Array and take max 3 if multiple
                 let filesToProcess = Array.from(input.files);
-                
-                // If existing images + new images > 3, slice
                 const remainingSlots = 3 - uploadedImages.length;
                 if(filesToProcess.length > remainingSlots) {
                     filesToProcess = filesToProcess.slice(0, remainingSlots);
@@ -871,7 +877,6 @@
 
                 for (let file of filesToProcess) {
                     const resizedBase64 = await resizeImage(file);
-                    // Remove data header for Gemini
                     const pureBase64 = resizedBase64.split(',')[1]; 
                     uploadedImages.push({ base64: pureBase64, src: resizedBase64 });
                 }
@@ -883,10 +888,8 @@
                     showConfirmModal();
                 } else {
                     alert(`${uploadedImages.length} fotoğraf yüklendi. 3'e tamamlamak için ${3 - uploadedImages.length} tane daha seç.`);
-                    // Keep sheet open to allow selecting more
                 }
             }
-            // Reset input value to allow re-selecting same files
             input.value = "";
         }
 
@@ -906,7 +909,6 @@
             const user = auth.currentUser;
             if (!user) { alert("Lütfen giriş yapın"); return; }
 
-            // Get temp data
             const tName = document.getElementById('temp-name').value;
             const tGender = document.getElementById('temp-gender').value;
             const tBirth = document.getElementById('temp-birthdate').value;
@@ -946,13 +948,9 @@
                 if(data.candidates && data.candidates[0].content) {
                     const fortuneText = data.candidates[0].content.parts[0].text;
                     const formattedText = fortuneText.replace(/\*\*(.*?)\*\*/g, '<br><strong>$1</strong>');
-                    
-                    // Save to History
                     await saveFortuneToHistory(user.uid, formattedText);
-                    // Reload List
                     await loadFortunesHistory(user.uid);
-
-                    showFortuneDetail(formattedText); // Show result directly
+                    showFortuneDetail(formattedText);
                 } else { alert("Okuyamadım, tekrar dene."); }
             } catch (error) {
                 document.getElementById('loading-overlay').style.display = 'none';
@@ -960,7 +958,6 @@
             }
         }
 
-        // --- UI UTILS ---
         window.navTo = function(screenId, navEl) {
             document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
             document.getElementById(screenId).classList.add('active');
@@ -968,13 +965,11 @@
                 document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
                 navEl.classList.add('active');
             } else {
-                // Auto update nav bar based on screenId
                 document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
                 if(screenId === 'home-screen') document.querySelectorAll('.nav-item')[0].classList.add('active');
                 if(screenId === 'fortunes-screen') document.querySelectorAll('.nav-item')[1].classList.add('active');
                 if(screenId === 'profile-screen') document.querySelectorAll('.nav-item')[2].classList.add('active');
             }
-            // Refresh history if navigating to fortune screen
             if(screenId === 'fortunes-screen' && auth.currentUser) loadFortunesHistory(auth.currentUser.uid);
         }
         

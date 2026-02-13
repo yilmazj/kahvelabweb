@@ -508,7 +508,7 @@
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
         import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, onAuthStateChanged, signOut, deleteUser } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-        import { getFirestore, doc, setDoc, getDoc, updateDoc, collection, addDoc, getDocs, orderBy, query, enableIndexedDbPersistence } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+        import { getFirestore, doc, setDoc, getDoc, updateDoc, collection, addDoc, getDocs, orderBy, query } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
         const firebaseConfig = {
           apiKey: "AIzaSyDVV5cLOkjaJ3k-FUwqRE4LucN293RPBbM",
@@ -523,18 +523,20 @@
         const auth = getAuth(app);
         const db = getFirestore(app);
 
-        enableIndexedDbPersistence(db).catch((err) => { console.log(err.code); });
+        // enableIndexedDbPersistence KALDIRILDI - Gizli sekmede kilitlenmeyi önler.
 
         const GEMINI_API_KEY = "AIzaSyCjSBmLJsOOb-uG9SRPt2c8cA5cAu1sfdE";
 
-        let uploadedImages = [];
+        let uploadedImages = []; // Stores 3 images
         let isUserPremium = false;
 
+        // HELPER: Capitalize Name
         function capitalizeWords(str) {
             if(!str) return "";
             return str.replace(/\b\w/g, l => l.toUpperCase());
         }
 
+        // HELPER: Resize Image (Client Side Compression)
         function resizeImage(file) {
             return new Promise((resolve) => {
                 const reader = new FileReader();
@@ -548,6 +550,7 @@
                         const MAX_HEIGHT = 1000;
                         let width = img.width;
                         let height = img.height;
+
                         if (width > height) {
                             if (width > MAX_WIDTH) { height *= MAX_WIDTH / width; width = MAX_WIDTH; }
                         } else {
@@ -557,6 +560,7 @@
                         canvas.height = height;
                         const ctx = canvas.getContext('2d');
                         ctx.drawImage(img, 0, 0, width, height);
+                        // Returns Data URL (Base64)
                         resolve(canvas.toDataURL('image/jpeg', 0.7)); 
                     };
                 };
@@ -567,6 +571,7 @@
         window.switchAuthTab = function(tab) {
             document.querySelectorAll('.auth-tab').forEach(t => t.classList.remove('active'));
             document.getElementById('tab-' + tab).classList.add('active');
+            
             if(tab === 'login') {
                 document.getElementById('form-login').classList.remove('hidden');
                 document.getElementById('form-register').classList.add('hidden');
@@ -582,9 +587,10 @@
             const email = document.getElementById('login-email').value;
             const pass = document.getElementById('login-pass').value;
             try { 
-                await signInWithEmailAndPassword(auth, email, pass);
+                const userCredential = await signInWithEmailAndPassword(auth, email, pass);
                 window.navTo('home-screen');
-            } catch (error) { alert("Giriş Hatası: " + error.message); }
+            } 
+            catch (error) { alert("Giriş Hatası: " + error.message); }
         }
 
         window.handleRegister = async function() {
@@ -610,45 +616,36 @@
             }
         }
 
-        // --- DÜZELTİLMİŞ PROFİL KAYDETME ---
+        // --- FIRESTORE USER PROFILE ---
+        // GÜNCELLENEN FONKSİYON: Hata olsa bile loading'i kapatır (finally bloğu)
         window.saveUserProfile = async function(isOnboarding) {
             const user = auth.currentUser;
             if(!user) return;
 
             const prefix = isOnboarding ? 'ob-' : 'edit-';
-            const rawName = document.getElementById(prefix + 'name').value;
-            const name = capitalizeWords(rawName);
-            const birthdate = document.getElementById(prefix + 'birthdate').value;
-            const gender = document.getElementById(prefix + 'gender').value;
-            const status = document.getElementById(prefix + 'status').value;
-            const job = document.getElementById(prefix + 'job').value;
-
-            if(isOnboarding && (!name || !birthdate || !gender)) {
-                alert("Lütfen temel bilgileri doldurun.");
-                return;
-            }
-
-            const userData = {
-                name: name,
-                birthdate: birthdate,
-                gender: gender,
-                status: status,
-                job: job,
-                updatedAt: new Date()
-            };
-
+            
             try {
-                // Overlay'i göster
+                // DOM okumalarını try içine aldık
+                const rawName = document.getElementById(prefix + 'name').value;
+                const name = capitalizeWords(rawName);
+                const birthdate = document.getElementById(prefix + 'birthdate').value;
+                const gender = document.getElementById(prefix + 'gender').value;
+                const status = document.getElementById(prefix + 'status').value;
+                const job = document.getElementById(prefix + 'job').value;
+
+                if(isOnboarding && (!name || !birthdate || !gender)) {
+                    alert("Lütfen temel bilgileri doldurun.");
+                    return;
+                }
+
+                const userData = {
+                    name: name, birthdate: birthdate, gender: gender, status: status, job: job, updatedAt: new Date()
+                };
+
+                // Show loading
                 document.getElementById('loading-overlay').style.display = 'flex';
                 
-                // Firebase'e kaydet
                 await setDoc(doc(db, "users", user.uid), userData, { merge: true });
-                
-                // Veriyi localde de hemen güncelle
-                await loadUserProfile(user.uid);
-
-                // Overlay'i kapat
-                document.getElementById('loading-overlay').style.display = 'none';
 
                 if(isOnboarding) {
                     window.navTo('home-screen');
@@ -657,22 +654,25 @@
                     window.navTo('profile-screen');
                 }
             } catch(e) { 
-                document.getElementById('loading-overlay').style.display = 'none';
-                console.error("Hata detayı:", e);
                 alert("Kaydetme hatası: " + e.message); 
+            } finally {
+                // Her durumda (hata olsa bile) çalışır
+                document.getElementById('loading-overlay').style.display = 'none';
             }
         }
 
-        // PREMIUM
+        // PREMIUM UPGRADE
         window.upgradeToPremium = async function() {
              const user = auth.currentUser;
              if(!user) return;
              document.getElementById('loading-overlay').style.display = 'flex';
+             // Fake delay
              setTimeout(async () => {
                  await setDoc(doc(db, "users", user.uid), { isPremium: true }, { merge: true });
                  document.getElementById('loading-overlay').style.display = 'none';
                  closeAllSheets();
                  alert("Tebrikler! Artık Premium Üyesin.");
+                 // Force refresh state
                  isUserPremium = true;
                  updatePremiumUI(true);
              }, 1500);
@@ -681,12 +681,12 @@
         function updatePremiumUI(isPrem) {
              const btn = document.getElementById('btn-upgrade');
              const qInput = document.getElementById('premium-question');
-             if(!btn || !qInput) return;
              if(isPrem) {
                  btn.innerText = "Premium Üye Aktif";
                  btn.style.background = "#4cd964";
                  btn.style.color = "white";
-                 btn.onclick = null;
+                 btn.onclick = null; // Disable click
+                 
                  qInput.disabled = false;
                  qInput.placeholder = "Özel sorunu buraya yaz...";
                  qInput.classList.remove('locked-input');
@@ -694,63 +694,76 @@
              } else {
                  btn.innerText = "Premium'a Geç ₺99/ay";
                  btn.onclick = () => window.openModal('payment-modal');
+
                  qInput.disabled = true;
                  qInput.placeholder = "Sadece Premium Üyeler Soru Sorabilir";
                  qInput.classList.add('locked-input');
-                 qInput.onclick = () => { if(confirm("Bu özellik Premium üyeler içindir.")) window.openModal('payment-modal'); }
+                 qInput.onclick = () => {
+                     if(confirm("Bu özellik Premium üyeler içindir.")) window.openModal('payment-modal');
+                 }
              }
         }
 
-        async function loadUserProfile(uid) {
+        async function checkUserProfile(uid) {
             const docRef = doc(db, "users", uid);
             const docSnap = await getDoc(docRef);
-            if (docSnap.exists()) {
-                const data = docSnap.data();
+            return docSnap.exists() ? docSnap.data() : null;
+        }
+
+        async function loadUserProfile(uid) {
+            const data = await checkUserProfile(uid);
+            if (data) {
+                // Sync Names
                 const fixedName = capitalizeWords(data.name);
-                document.getElementById('profile-name').innerText = fixedName || "Kullanıcı";
+                document.getElementById('profile-name').innerText = fixedName;
+                document.getElementById('edit-name').value = fixedName;
                 
-                // inputları doldur
-                if(document.getElementById('edit-name')) document.getElementById('edit-name').value = fixedName || "";
-                if(document.getElementById('edit-birthdate')) document.getElementById('edit-birthdate').value = data.birthdate || "";
-                if(document.getElementById('edit-gender')) document.getElementById('edit-gender').value = data.gender || "";
-                if(document.getElementById('edit-status')) document.getElementById('edit-status').value = data.status || "";
-                if(document.getElementById('edit-job')) document.getElementById('edit-job').value = data.job || "";
+                document.getElementById('edit-birthdate').value = data.birthdate || "";
+                document.getElementById('edit-gender').value = data.gender || "";
+                document.getElementById('edit-status').value = data.status || "";
+                document.getElementById('edit-job').value = data.job || "";
                 
-                // temp inputları doldur (fal öncesi onay için)
-                document.getElementById('temp-name').value = fixedName || "";
+                // Temp
+                document.getElementById('temp-name').value = fixedName;
                 document.getElementById('temp-birthdate').value = data.birthdate || "";
                 document.getElementById('temp-gender').value = data.gender || "";
                 document.getElementById('temp-status').value = data.status || "";
                 document.getElementById('temp-job').value = data.job || "";
 
+                // Premium Check
                 isUserPremium = data.isPremium || false;
                 updatePremiumUI(isUserPremium);
             }
         }
 
-        // HISTORY
+        // --- HISTORY LOGIC ---
         async function saveFortuneToHistory(uid, text) {
             try {
                 const historyRef = collection(db, "users", uid, "fortunes");
-                await addDoc(historyRef, { text: text, date: new Date() });
+                await addDoc(historyRef, {
+                    text: text,
+                    date: new Date()
+                });
             } catch(e) { console.log("History save error", e); }
         }
 
         async function loadFortunesHistory(uid) {
             const listEl = document.getElementById('fortunes-list');
             const emptyEl = document.getElementById('empty-history');
-            if(!listEl) return;
             listEl.innerHTML = "";
+            
             try {
                 const historyRef = collection(db, "users", uid, "fortunes");
                 const q = query(historyRef, orderBy("date", "desc"));
                 const querySnapshot = await getDocs(q);
+
                 if(querySnapshot.empty) {
                     listEl.style.display = 'none';
-                    if(emptyEl) emptyEl.style.display = 'flex';
+                    emptyEl.style.display = 'flex';
                 } else {
                     listEl.style.display = 'flex';
-                    if(emptyEl) emptyEl.style.display = 'none';
+                    emptyEl.style.display = 'none';
+                    
                     querySnapshot.forEach((doc) => {
                         const d = doc.data();
                         const dateStr = d.date ? new Date(d.date.seconds * 1000).toLocaleDateString('tr-TR') : "";
@@ -784,12 +797,16 @@
                 document.getElementById('summary-content').style.filter = 'none';
                 document.getElementById('lock-overlay').style.display = 'none';
 
+                // Initial Name (Before Load)
+                document.getElementById('profile-name').innerText = capitalizeWords(user.email.split('@')[0]);
+
                 await loadUserProfile(user.uid);
                 await loadFortunesHistory(user.uid);
                 
                 if(document.getElementById('auth-screen').classList.contains('active')) {
                      window.navTo('home-screen');
                 }
+
             } else {
                 document.getElementById('profile-name').innerText = "Misafir Kullanıcı";
                 document.getElementById('guest-actions').classList.remove('hidden');
@@ -798,45 +815,58 @@
                 document.getElementById('menu-account-info').classList.add('hidden');
                 document.getElementById('summary-content').style.filter = 'blur(6px)';
                 document.getElementById('lock-overlay').style.display = 'flex';
+                if(document.getElementById('onboarding-screen').classList.contains('active')) { window.navTo('auth-screen'); }
             }
         });
 
-        // PHOTO / GEMINI
+        // --- GEMINI & IMAGE HANDLING (RESIZED & MULTIPLE) ---
+
         window.triggerCamera = function() {
-            document.getElementById('file-input').removeAttribute('multiple');
+            document.getElementById('file-input').removeAttribute('multiple'); // Camera needs single usually
             document.getElementById('file-input').click();
         }
         window.triggerGallery = function() {
             document.getElementById('file-input').setAttribute('multiple', '');
             document.getElementById('file-input').click();
         }
+
         window.openPhotoOptions = function() {
-            uploadedImages = [];
+            uploadedImages = []; // Reset
             document.getElementById('overlay').classList.add('open');
             document.getElementById('photo-options-sheet').classList.add('open');
         }
 
         window.handleFileSelect = async function(input) {
             if (input.files && input.files.length > 0) {
-                document.getElementById('loading-overlay').style.display = 'flex';
+                document.getElementById('loading-overlay').style.display = 'flex'; // Show loading during compression
+                
+                // Convert FileList to Array and take max 3 if multiple
                 let filesToProcess = Array.from(input.files);
+                
+                // If existing images + new images > 3, slice
                 const remainingSlots = 3 - uploadedImages.length;
                 if(filesToProcess.length > remainingSlots) {
                     filesToProcess = filesToProcess.slice(0, remainingSlots);
                 }
+
                 for (let file of filesToProcess) {
                     const resizedBase64 = await resizeImage(file);
+                    // Remove data header for Gemini
                     const pureBase64 = resizedBase64.split(',')[1]; 
                     uploadedImages.push({ base64: pureBase64, src: resizedBase64 });
                 }
+
                 document.getElementById('loading-overlay').style.display = 'none';
+
                 if(uploadedImages.length >= 3) {
                     closeAllSheets();
                     showConfirmModal();
                 } else {
                     alert(`${uploadedImages.length} fotoğraf yüklendi. 3'e tamamlamak için ${3 - uploadedImages.length} tane daha seç.`);
+                    // Keep sheet open to allow selecting more
                 }
             }
+            // Reset input value to allow re-selecting same files
             input.value = "";
         }
 
@@ -855,6 +885,8 @@
         window.sendToGemini = async function() {
             const user = auth.currentUser;
             if (!user) { alert("Lütfen giriş yapın"); return; }
+
+            // Get temp data
             const tName = document.getElementById('temp-name').value;
             const tGender = document.getElementById('temp-gender').value;
             const tBirth = document.getElementById('temp-birthdate').value;
@@ -870,9 +902,19 @@
                 questionText = `Kullanıcının SANA ÖZEL SORUSU VAR: "${tQuestion}". Yanıtında buna mutlaka değin.`;
             }
 
-            const promptText = `Sen mistik kahve falı yorumcususun. Kullanıcı: ${tName}, ${tGender}, ${tBirth}, ${tStatus}, ${tJob}. ${questionText} Fal fotoğraflarına bak. Aşk, Kariyer, Gelecek 3 paragraf yorumla. Samimi ol.`;
-            const imageParts = uploadedImages.map(img => ({ "inline_data": { "mime_type": "image/jpeg", "data": img.base64 } }));
-            const payload = { "contents": [{ "parts": [ {"text": promptText}, ...imageParts ] }] };
+            const promptText = `
+                Sen mistik kahve falı yorumcususun. Kullanıcı: ${tName}, ${tGender}, ${tBirth}, ${tStatus}, ${tJob}.
+                ${questionText}
+                Fal fotoğraflarına bak. Aşk, Kariyer, Gelecek 3 paragraf yorumla. Samimi ol.
+            `;
+
+            const imageParts = uploadedImages.map(img => ({
+                "inline_data": { "mime_type": "image/jpeg", "data": img.base64 }
+            }));
+
+            const payload = {
+                "contents": [{ "parts": [ {"text": promptText}, ...imageParts ] }]
+            };
 
             try {
                 const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_API_KEY}`, {
@@ -880,12 +922,17 @@
                 });
                 const data = await response.json();
                 document.getElementById('loading-overlay').style.display = 'none';
+
                 if(data.candidates && data.candidates[0].content) {
                     const fortuneText = data.candidates[0].content.parts[0].text;
                     const formattedText = fortuneText.replace(/\*\*(.*?)\*\*/g, '<br><strong>$1</strong>');
+                    
+                    // Save to History
                     await saveFortuneToHistory(user.uid, formattedText);
+                    // Reload List
                     await loadFortunesHistory(user.uid);
-                    showFortuneDetail(formattedText);
+
+                    showFortuneDetail(formattedText); // Show result directly
                 } else { alert("Okuyamadım, tekrar dene."); }
             } catch (error) {
                 document.getElementById('loading-overlay').style.display = 'none';
@@ -893,7 +940,7 @@
             }
         }
 
-        // UI UTILS
+        // --- UI UTILS ---
         window.navTo = function(screenId, navEl) {
             document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
             document.getElementById(screenId).classList.add('active');
@@ -901,11 +948,13 @@
                 document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
                 navEl.classList.add('active');
             } else {
+                // Auto update nav bar based on screenId
                 document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
                 if(screenId === 'home-screen') document.querySelectorAll('.nav-item')[0].classList.add('active');
                 if(screenId === 'fortunes-screen') document.querySelectorAll('.nav-item')[1].classList.add('active');
                 if(screenId === 'profile-screen') document.querySelectorAll('.nav-item')[2].classList.add('active');
             }
+            // Refresh history if navigating to fortune screen
             if(screenId === 'fortunes-screen' && auth.currentUser) loadFortunesHistory(auth.currentUser.uid);
         }
         
@@ -915,7 +964,7 @@
             const body = document.body;
             if(mode === 'dark') body.classList.add('dark-mode');
             else if (mode === 'light') body.classList.remove('dark-mode');
-            else { if (window.matchMedia('(prefers-color-scheme: dark)').matches) body.classList.add('dark-mode'); else body.classList.remove('dark-mode'); }
+            else { if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) body.classList.add('dark-mode'); else body.classList.remove('dark-mode'); }
         }
 
         window.openModal = function(id) {
